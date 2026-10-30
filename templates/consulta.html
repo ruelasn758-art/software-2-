@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Consultar · PUNO REPORTA{% endblock %}
+{% block content %}
+<div class="auth">
+  <section class="page-head">
+    <p class="kicker">Seguimiento</p>
+    <h1>Consulta el estado de tu reporte</h1>
+    <p>Usa el código que recibiste al registrar, por ejemplo <code>PR-2026-0001</code>.</p>
+  </section>
+  <form class="card" method="post">
+    <label>Código del reporte
+      <input type="text" name="codigo" placeholder="PR-2026-0001" required>
+    </label>
+    <button class="btn btn-gold full" type="submit">Buscar</button>
+  </form>
+</div>
+{% endblock %}

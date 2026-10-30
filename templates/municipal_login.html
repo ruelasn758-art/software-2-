@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Municipalidad · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="page-head narrow">
+  <p class="kicker">Área responsable</p>
+  <h1>Panel de la municipalidad</h1>
+  <p>Clave local de demostración: <code>puno2026</code></p>
+</section>
+<form class="card narrow" method="post">
+  <label>Clave
+    <input type="password" name="clave" required>
+  </label>
+  <button class="btn btn-gold full" type="submit">Ingresar</button>
+</form>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Panel de atención · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="page-head">
+  <p class="kicker">{% if es_operador %}{{ usuario.area_nombre }}{% else %}Administrador{% endif %}</p>
+  <h1>{% if es_operador %}Alertas de tu área{% else %}Todos los reportes{% endif %}</h1>
+  <p>{% if es_operador %}Revisa el mapa, verifica en sitio y actualiza el estado.{% else %}Supervisas cada incidencia de la ciudad.{% endif %}</p>
+</section>
+
+<form class="filtros" method="get">
+  <label>Estado del reporte
+  <select name="estado">
+    <option value="">Todos los estados</option>
+    {% for e in ['Reportado', 'En proceso', 'Solucionado'] %}
+      <option value="{{ e }}" {% if estado_filtro == e %}selected{% endif %}>{{ e }}</option>
+    {% endfor %}
+  </select>
+  </label>
+  {% if es_admin %}
+  <label>Área responsable
+  <select name="area_id">
+    <option value="">Todas las áreas</option>
+    {% for a in areas %}
+      <option value="{{ a.id }}" {% if area_filtro == a.id %}selected{% endif %}>{{ a.nombre }}</option>
+    {% endfor %}
+  </select>
+  </label>
+  {% endif %}
+  <button class="btn btn-ghost" type="submit">Filtrar</button>
+</form>
+
+{% if reportes %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Categoría</th>
+          <th>Área</th>
+          <th>Estado</th>
+          <th>Ciudadano</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in reportes %}
+          <tr onclick="location.href='{{ url_for('atender', codigo=r.codigo) }}'">
+            <td>{{ r.codigo }}</td>
+            <td>{{ r.categoria_nombre }}</td>
+            <td>{{ r.area_nombre }}{% if r.referencia %}<br><small>{{ r.referencia }}</small>{% endif %}</td>
+            <td><span class="pill {{ r.estado|replace(' ', '-')|lower }}">{{ r.estado }}</span></td>
+            <td>{{ r.ciudadano_nombre }}</td>
+            <td><a href="{{ url_for('atender', codigo=r.codigo) }}">Atender</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p class="card">No hay reportes con ese filtro.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ meta.titulo }} · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="bienvenida cap-{{ meta.clase }}">
+  <div>
+    <p class="kicker-azul">{{ meta.subtitulo }}</p>
+    <h1>{{ meta.titulo }}</h1>
+    <p>Solo ves pines de {{ meta.titulo|lower }} en este mapa.</p>
+  </div>
+  <a class="btn btn-reportar" href="{{ url_for('reportar') }}">+ Reportar {{ meta.titulo|lower }}</a>
+</section>
+
+<section class="panel-dos">
+  <article class="card">
+    <div class="map-head">
+      <h2>Reportes de {{ meta.titulo }}</h2>
+      <span>{{ reportes|length }}</span>
+    </div>
+    {% if reportes %}
+      {% for r in reportes %}
+        <a class="alerta-color cat-{{ r.categoria_nombre|lower }}" href="{{ url_for('detalle', codigo=r.codigo) }}" data-pin="{{ r.codigo }}">
+          <span class="punto"></span>
+          <div>
+            <strong>{{ r.codigo }}</strong>
+            <p>{{ r.referencia or r.descripcion[:70] }}</p>
+          </div>
+          <em class="pill {{ r.estado|replace(' ', '-')|lower }}">{{ r.estado }}</em>
+        </a>
+      {% endfor %}
+    {% else %}
+      <p class="hint">Todavía no hay reportes de {{ meta.titulo|lower }} en Puno.</p>
+    {% endif %}
+  </article>
+  <article class="card">
+    <div class="map-head">
+      <h2>Mapa de {{ meta.titulo }}</h2>
+      <p>Pasa el cursor por un reporte para centrar su pin.</p>
+    </div>
+    <div id="mapa-apartado" class="mapa"></div>
+  </article>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>PunoReporta.mapaFiltrado({ id: "mapa-apartado", categoria: "{{ meta.categoria }}" });</script>
+{% endblock %}

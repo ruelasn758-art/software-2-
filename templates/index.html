@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Inicio · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="kicker">Ciudadano · Puno</p>
+  <h1>Reporta lo que la ciudad necesita atender.</h1>
+  <p class="lead">
+    Baches, luminarias apagadas, basura y fugas. Marca el punto, adjunta una foto
+    y la municipalidad asigna el área responsable.
+  </p>
+  <div class="hero-actions">
+    {% if es_ciudadano %}
+      <a class="btn btn-gold" href="{{ url_for('reportar') }}">Registrar incidencia</a>
+      <a class="btn btn-ghost" href="{{ url_for('mis_reportes') }}">Mis reportes</a>
+    {% elif es_admin or es_operador %}
+      <a class="btn btn-gold" href="{{ url_for('alertas') }}">Ver alertas</a>
+      <a class="btn btn-ghost" href="{{ url_for('panel') }}">Ir al panel</a>
+    {% else %}
+      <a class="btn btn-gold" href="{{ url_for('registro') }}">Crear cuenta ciudadana</a>
+      <a class="btn btn-ghost" href="{{ url_for('ingresar') }}">Ya tengo cuenta</a>
+    {% endif %}
+  </div>
+</section>
+
+<section class="stats">
+  <article class="stat-btn activo" data-filtro=""><span>{{ totales.total }}</span> todos</article>
+  <article class="stat-btn" data-filtro="Reportado"><span>{{ totales.reportado }}</span> reportados</article>
+  <article class="stat-btn" data-filtro="En proceso"><span>{{ totales.proceso }}</span> en proceso</article>
+  <article class="stat-btn" data-filtro="Solucionado"><span>{{ totales.solucionado }}</span> solucionados</article>
+</section>
+
+<section class="map-panel">
+  <div class="map-head">
+    <h2>Mapa de incidencias</h2>
+    <p>Toca un número arriba para filtrar. Cada pin se puede abrir.</p>
+  </div>
+  <div id="mapa-inicio" class="mapa"></div>
+  <div class="leyenda">
+    <span><i class="dot reportado"></i> Reportado</span>
+    <span><i class="dot proceso"></i> En proceso</span>
+    <span><i class="dot solucionado"></i> Solucionado</span>
+  </div>
+</section>
+
+<section class="cats">
+  {% for c in categorias %}
+    <article class="cat-card">
+      <h3>{{ c.nombre }}</h3>
+      <p>Tipo {{ c.tipo }} · código {{ c.codigo }}</p>
+    </article>
+  {% endfor %}
+</section>
+{% endblock %}
+{% block scripts %}
+<script>PunoReporta.mapaInicio();</script>
+{% endblock %}

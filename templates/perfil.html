@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Mi cuenta · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="page-head">
+  <p class="kicker">{{ usuario.rol }}</p>
+  <h1>{{ usuario.nombre }}</h1>
+  <p>Usuario {{ usuario.usuario }} · {{ usuario.codigo }}</p>
+</section>
+<div class="card narrow">
+  <p><span class="pill {{ usuario.estado|lower }}">{{ usuario.estado }}</span></p>
+  {% if usuario.estado == 'Pendiente' %}
+    <p>Tu DNI y domicilio están en revisión. Cuando el administrador los acepte, podrás reportar incidencias.</p>
+  {% elif usuario.estado == 'Rechazado' %}
+    <p>Verificación rechazada. Motivo: {{ usuario.motivo or 'No indicado' }}.</p>
+  {% elif usuario.estado == 'Suspendido' %}
+    <p>Cuenta suspendida. Motivo: {{ usuario.motivo or 'No indicado' }}.</p>
+  {% endif %}
+  <ul class="meta">
+    <li><strong>DNI:</strong> {{ usuario.dni }}</li>
+    <li><strong>Celular:</strong> {{ usuario.telefono }}</li>
+    <li><strong>Dirección:</strong> {{ usuario.direccion }}</li>
+    {% if usuario.referencia %}<li><strong>Referencia:</strong> {{ usuario.referencia }}</li>{% endif %}
+    {% if usuario.area_nombre %}<li><strong>Área:</strong> {{ usuario.area_nombre }}</li>{% endif %}
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}PUNO REPORTA{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='20261030-celeste') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+</head>
+{% set ep = request.endpoint %}
+{% set acceso_dia = false %}
+{% set panel_dia = es_operador and ep in ['panel', 'atender', 'alertas'] %}
+{% set tema_noche = ((not usuario and not landing) or es_ciudadano) and not acceso_dia %}
+<body class="{% if es_ciudadano %}tema-ciudadano{% endif %}{% if landing %} landing-noche{% endif %}{% if tema_noche %} tema-noche{% endif %}{% if acceso_dia %} acceso-dia{% endif %}{% if panel_dia %} entidad-dia{% endif %}">
+  {% if tema_noche %}
+  <div class="noche-fondo" aria-hidden="true">
+    <img src="{{ url_for('static', filename='img/puno-noche.png') }}" alt="">
+  </div>
+  {% endif %}
+  {% if es_ciudadano %}
+  <aside class="side-ciudadano">
+    <a class="brand side-brand" href="{{ url_for('index') }}">
+      <img class="brand-logo" src="{{ url_for('static', filename='img/logo-192.png') }}" alt="Logo PUNO REPORTA">
+      <span><strong>PUNO REPORTA</strong><small>Ciudadano</small></span>
+    </a>
+    <nav>
+      <a href="{{ url_for('index') }}" {% if ep == 'index' %}class="activo"{% endif %}>Inicio</a>
+      <a href="{{ url_for('reportar') }}" {% if ep == 'reportar' %}class="activo"{% endif %}>Reportar</a>
+      <a href="{{ url_for('mis_reportes') }}" {% if ep == 'mis_reportes' %}class="activo"{% endif %}>Mis reportes</a>
+      <a href="{{ url_for('mapa_ciudadano') }}" {% if ep == 'mapa_ciudadano' %}class="activo"{% endif %}>Mapa</a>
+      <p class="side-label">Alertas por tipo</p>
+      {% for slug, a in apartados.items() %}
+        <a class="side-cat {{ a.clase }}{% if ep == 'apartado' and request.view_args.slug == slug %} activo{% endif %}" href="{{ url_for('apartado', slug=slug) }}">{{ a.titulo }}</a>
+      {% endfor %}
+      <a href="{{ url_for('perfil') }}" {% if ep == 'perfil' %}class="activo"{% endif %}>Mi cuenta</a>
+      <a href="{{ url_for('salir') }}">Salir</a>
+    </nav>
+  </aside>
+  {% else %}
+  <div class="sky"></div>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}">
+      <img class="brand-logo" src="{{ url_for('static', filename='img/logo-192.png') }}" alt="Logo PUNO REPORTA">
+      <span>
+        <strong>PUNO REPORTA</strong>
+        <small>Municipalidad Provincial de Puno</small>
+      </span>
+    </a>
+    <nav>
+      {% if landing %}
+      <a href="{{ url_for('index') }}">Inicio</a>
+      <a href="#como-funciona">¿Cómo funciona?</a>
+      <a href="#tipos-incidencias">Tipos de incidencias</a>
+      {% else %}
+      <a href="{{ url_for('index') }}">Mapa</a>
+      {% endif %}
+      {% if usuario %}
+        {% if es_admin or es_operador %}
+          <a href="{{ url_for('alertas') }}">Alertas{% if n_alertas %} <em class="badge">{{ n_alertas }}</em>{% endif %}</a>
+          <a href="{{ url_for('panel') }}">Asignaciones</a>
+        {% endif %}
+        {% if es_admin %}
+          <a href="{{ url_for('cuentas') }}">Cuentas{% if n_pendientes %} <em class="badge">{{ n_pendientes }}</em>{% endif %}</a>
+        {% endif %}
+        <a href="{{ url_for('perfil') }}">{{ usuario.nombre.split(' ')[0] }}</a>
+        <a href="{{ url_for('salir') }}">Salir</a>
+      {% else %}
+        <a href="{{ url_for('consultar') }}" {% if request.endpoint == 'consultar' %}class="activo"{% endif %}>Consultar</a>
+        <a href="{{ url_for('ingresar') }}" {% if request.endpoint == 'ingresar' %}class="activo"{% endif %}>Ingresar</a>
+        <a class="nav-ghost{% if request.endpoint == 'registro' %} activo{% endif %}" href="{{ url_for('registro') }}">Crear cuenta</a>
+      {% endif %}
+    </nav>
+  </header>
+  {% endif %}
+
+  <div class="{% if es_ciudadano %}app-main{% endif %}">
+    {% if es_ciudadano %}
+      <header class="top-ciudadano">
+        <p>Hola, {{ usuario.nombre.split(' ')[0] }}</p>
+      </header>
+    {% endif %}
+    <main class="wrap {% if es_ciudadano %}wrap-ciudadano{% endif %}">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flashes">
+            {% for category, message in messages %}
+              <p class="flash flash-{{ category }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+    {% if not es_ciudadano and not landing %}
+      <footer class="foot">
+        Sistema local de incidencias ciudadanas · EST323 Ingeniería de Software II
+      </footer>
+    {% endif %}
+  </div>
+
+  <script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+  <script>
+    window.PUNO = { lat: {{ puno_lat }}, lng: {{ puno_lng }} };
+  </script>
+  <script src="{{ url_for('static', filename='js/app.js', v='20261027-gps2') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

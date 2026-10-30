@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Cuentas · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="page-head">
+  <p class="kicker">Administrador</p>
+  <h1>Usuarios y recuperación</h1>
+  <p>Verifica DNI de ciudadanos, crea operadores de área y aprueba cuentas olvidadas.</p>
+</section>
+
+<div class="split">
+  <section class="card">
+    <h2>Cuentas</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Persona</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in personas %}
+            <tr>
+              <td>{{ p.nombre }}<br><small>{{ p.usuario }} · {{ p.dni }}</small></td>
+              <td>{{ p.rol }}{% if p.area_nombre %}<br><small>{{ p.area_nombre }}</small>{% endif %}</td>
+              <td><span class="pill {{ p.estado|lower }}">{{ p.estado }}</span></td>
+              <td><a href="{{ url_for('cuenta_detalle', uid=p.id) }}">Revisar</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <aside>
+    <form class="card" method="post">
+      <h2>Nuevo operador</h2>
+      <p class="hint">Este usuario solo recibe alertas de su área, ve el mapa y verifica en campo.</p>
+      <label>Nombre
+        <input type="text" name="nombre" required>
+      </label>
+      <label>Usuario
+        <input type="text" name="usuario" required>
+      </label>
+      <label>DNI
+        <input type="text" name="dni" required maxlength="8">
+      </label>
+      <label>Celular
+        <input type="text" name="telefono" required maxlength="9">
+      </label>
+      <label>Área que atiende
+        <select name="area_id" required>
+          {% for a in areas %}
+            <option value="{{ a.id }}">{{ a.nombre }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Contraseña inicial
+        <input type="text" name="clave" required minlength="6" value="opera123">
+      </label>
+      <button class="btn btn-gold full" type="submit">Crear operador</button>
+    </form>
+  </aside>
+</div>
+
+<section class="card" style="margin-top:1rem">
+  <h2>Recuperación de cuentas</h2>
+  {% if recuperaciones %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Solicitud</th>
+            <th>Ciudadano</th>
+            <th>Estado</th>
+            <th>Código</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in recuperaciones %}
+            <tr>
+              <td>{{ r.codigo }}</td>
+              <td>{{ r.nombre }} ({{ r.usuario }})<br><small>DNI {{ r.dni }} · {{ r.telefono }}</small></td>
+              <td><span class="pill {{ r.estado|lower }}">{{ r.estado }}</span></td>
+              <td>{{ r.codigo_clave or '—' }}</td>
+              <td>
+                {% if r.estado == 'Pendiente' %}
+                  <form method="post" action="{{ url_for('resolver_recuperacion', rid=r.id) }}" class="inline">
+                    <button class="btn btn-gold" name="accion" value="aprobar">Aprobar</button>
+                    <button class="btn btn-ghost" name="accion" value="rechazar">Rechazar</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>No hay solicitudes.</p>
+  {% endif %}
+</section>
+{% endblock %}

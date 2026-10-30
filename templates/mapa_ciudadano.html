@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Mapa · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="bienvenida">
+  <div>
+    <p class="kicker-azul">Ciudad</p>
+    <h1>Mapa general de Puno</h1>
+    <p>Todos los pines, cada uno con el color de su alerta.</p>
+  </div>
+</section>
+<section class="card">
+  <div id="mapa-inicio" class="mapa mapa-alto"></div>
+  <div class="leyenda">
+    <span><i class="dot vias"></i> Vías</span>
+    <span><i class="dot basura"></i> Basura</span>
+    <span><i class="dot alumbrado"></i> Alumbrado</span>
+    <span><i class="dot agua"></i> Agua</span>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>PunoReporta.mapaFiltrado({ id: "mapa-inicio" });</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Nueva contraseña · PUNO REPORTA{% endblock %}
+{% block content %}
+<div class="auth">
+  <section class="page-head">
+    <p class="kicker">Código de recuperación</p>
+    <h1>Escribe el código del administrador</h1>
+    <p>Cuando aprueben tu solicitud, te darán un código de 6 dígitos.</p>
+  </section>
+  <form class="card" method="post">
+    <label>Usuario
+      <input type="text" name="usuario" required>
+    </label>
+    <label>Código de 6 dígitos
+      <input type="text" name="codigo_clave" required maxlength="6" inputmode="numeric">
+    </label>
+    <label>Nueva contraseña
+      <input type="password" name="clave" required minlength="6">
+    </label>
+    <label>Repite la contraseña
+      <input type="password" name="clave2" required minlength="6">
+    </label>
+    <button class="btn btn-gold full" type="submit">Guardar contraseña</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Atender {{ reporte.codigo }} · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="page-head">
+  <p class="kicker">{{ reporte.codigo }} · {{ reporte.area_nombre }}</p>
+  <h1>Atender incidencia</h1>
+  <p>{{ reporte.categoria_nombre }} reportada por {{ reporte.ciudadano_nombre }}.</p>
+</section>
+
+<div class="split">
+  <article class="card">
+    <img class="foto" src="{{ url_for('static', filename='uploads/fotos/' + reporte.foto) }}" alt="Foto">
+    <p>{{ reporte.descripcion }}</p>
+    {% if reporte.referencia %}<p><strong>Referencia:</strong> {{ reporte.referencia }}</p>{% endif %}
+    {% if reporte.direccion_mapa %}<p class="hint">{{ reporte.direccion_mapa }}</p>{% endif %}
+    <p class="hint">GPS {{ "%.5f"|format(reporte.lat) }}, {{ "%.5f"|format(reporte.lng) }}</p>
+    <div id="mapa-atender" class="mapa"></div>
+    <a class="btn btn-ghost full" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat={{ reporte.lat }}&mlon={{ reporte.lng }}#map=18/{{ reporte.lat }}/{{ reporte.lng }}">Abrir ruta en OpenStreetMap</a>
+  </article>
+
+  <aside>
+    <form class="card" method="post">
+      <input type="hidden" name="accion" value="verificar">
+      <h2>Verificar en sitio</h2>
+      <p class="hint">Confirma que fuiste al punto del mapa y que la incidencia existe.</p>
+      {% if reporte.verificado_sitio %}
+        <p><span class="pill verificado">Ya verificado en campo</span></p>
+      {% else %}
+        <button class="btn btn-gold full" type="submit">Verificar ubicación</button>
+      {% endif %}
+    </form>
+
+    <form class="card" method="post">
+      <input type="hidden" name="accion" value="estado">
+      <h2>Actualizar estado</h2>
+      <label>Nuevo estado
+        <select name="estado" required>
+          {% for e in ['Reportado', 'En proceso', 'Solucionado'] %}
+            <option value="{{ e }}" {% if reporte.estado == e %}selected{% endif %}>{{ e }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button class="btn btn-gold full" type="submit">Guardar y notificar</button>
+    </form>
+
+    <form class="card" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="accion" value="evidencia">
+      <h2>Registrar evidencia</h2>
+      <label>Fotografía de la atención
+        <input type="file" name="fotografia" accept="image/png,image/jpeg,image/webp" required>
+      </label>
+      <button class="btn btn-ghost full" type="submit">Adjuntar evidencia</button>
+    </form>
+
+    <div class="card">
+      <h2>Historial</h2>
+      <ol class="timeline">
+        {% for n in notificaciones %}
+          <li><span>{{ n.codigo }}</span><p>{{ n.mensaje }}</p></li>
+        {% endfor %}
+      </ol>
+      {% for e in evidencias %}
+        <figure class="mini">
+          <img src="{{ url_for('static', filename='uploads/evidencias/' + e.fotografia) }}" alt="">
+          <figcaption>{{ e.codigo }} · {{ e.fecha }}</figcaption>
+        </figure>
+      {% endfor %}
+    </div>
+  </aside>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>PunoReporta.mapaPunto({{ reporte.lat }}, {{ reporte.lng }}, "mapa-atender");</script>
+{% endblock %}

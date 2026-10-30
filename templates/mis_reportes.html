@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Mis reportes · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="bienvenida">
+  <div>
+    <p class="kicker-azul">Ciudadano</p>
+    <h1>Tus incidencias</h1>
+    <p>El mapa de la derecha muestra solo lo que tú reportaste.</p>
+  </div>
+  <a class="btn btn-reportar" href="{{ url_for('reportar') }}">+ Reportar problema</a>
+</section>
+
+<section class="panel-dos">
+  <article>
+    {% if reportes %}
+      {% for r in reportes %}
+        <a class="card reporte-card alerta-color cat-{{ r.categoria_nombre|lower }}" href="{{ url_for('detalle', codigo=r.codigo) }}" data-pin="{{ r.codigo }}">
+          <span class="punto"></span>
+          <div>
+            <strong>{{ r.codigo }} · {{ r.categoria_nombre }}</strong>
+            <p class="hint" style="margin:0.2rem 0 0">{{ r.referencia or r.area_nombre }}</p>
+          </div>
+          <span class="pill {{ r.estado|replace(' ', '-')|lower }}">{{ r.estado }}</span>
+        </a>
+      {% endfor %}
+    {% else %}
+      <p class="card">Aún no registras incidencias. {% if usuario.estado == 'Verificado' %}<a href="{{ url_for('reportar') }}">Reportar ahora</a>{% else %}Espera la verificación de tu DNI.{% endif %}</p>
+    {% endif %}
+  </article>
+  <article class="card">
+    <div class="map-head">
+      <h2>Mapa de tus reportes</h2>
+    </div>
+    <div id="mapa-mios" class="mapa"></div>
+  </article>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>PunoReporta.mapaFiltrado({ id: "mapa-mios", mios: true });</script>
+{% endblock %}

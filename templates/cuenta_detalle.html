@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ persona.nombre }} · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="page-head">
+  <p class="kicker">{{ persona.rol }} · {{ persona.codigo }}</p>
+  <h1>{{ persona.nombre }}</h1>
+  <p>{{ persona.usuario }} · estado {{ persona.estado }}</p>
+</section>
+
+<div class="split">
+  <article class="card">
+    <ul class="meta">
+      <li><strong>DNI:</strong> {{ persona.dni }}</li>
+      <li><strong>Celular:</strong> {{ persona.telefono }}</li>
+      <li><strong>Dirección:</strong> {{ persona.direccion }}</li>
+      {% if persona.referencia %}<li><strong>Referencia:</strong> {{ persona.referencia }}</li>{% endif %}
+      {% if persona.area_nombre %}<li><strong>Área:</strong> {{ persona.area_nombre }}</li>{% endif %}
+      {% if persona.motivo %}<li><strong>Motivo:</strong> {{ persona.motivo }}</li>{% endif %}
+    </ul>
+    {% if persona.dni_foto %}
+      <h2>Foto del DNI</h2>
+      <img class="foto" src="{{ url_for('ver_dni', nombre=persona.dni_foto) }}" alt="DNI">
+    {% else %}
+      <p class="hint">Este usuario no tiene foto de DNI (operador o administrador creado por el sistema).</p>
+    {% endif %}
+  </article>
+  <aside>
+    {% if persona.rol == 'ciudadano' %}
+      <form class="card" method="post">
+        <h2>Verificación</h2>
+        <label>Motivo (si rechazas o suspendes)
+          <textarea name="motivo" rows="3">{{ persona.motivo or '' }}</textarea>
+        </label>
+        <button class="btn btn-gold full" name="accion" value="verificar">Verificar cuenta</button>
+        <button class="btn btn-ghost full" name="accion" value="rechazar">Rechazar DNI</button>
+        <button class="btn btn-ghost full" name="accion" value="suspender">Suspender</button>
+      </form>
+    {% endif %}
+    {% if reportes %}
+      <div class="card">
+        <h2>Reportes</h2>
+        <ul>
+          {% for r in reportes %}
+            <li><a href="{{ url_for('detalle', codigo=r.codigo) }}">{{ r.codigo }}</a> · {{ r.estado }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

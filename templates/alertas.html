@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Alertas · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="page-head">
+  <p class="kicker">{% if es_operador %}{{ usuario.area_nombre }}{% else %}Municipalidad{% endif %}</p>
+  <h1>Alertas y ubicaciones</h1>
+  <p>{% if es_operador %}Solo ves lo asignado a tu área. Verifica el punto en el mapa y atiende.{% else %}Recibes todas las incidencias y las cuentas nuevas.{% endif %}</p>
+</section>
+
+<form method="post" action="{{ url_for('leer_alertas') }}">
+  <button class="btn btn-ghost" type="submit">Marcar todas como leídas</button>
+</form>
+
+<div class="split" style="margin-top:1rem">
+  <section class="card">
+    {% if alertas %}
+      <ol class="timeline" style="padding-left:0">
+        {% for a in alertas %}
+          <li class="alerta-item {% if not a.leida %}nueva{% endif %}" {% if a.reporte_codigo %}data-pin="{{ a.reporte_codigo }}"{% endif %}>
+            <span>{{ a.creado_en }}{% if not a.leida %} · nueva{% endif %}</span>
+            <p>{{ a.mensaje }}</p>
+            {% if a.reporte_codigo %}
+              <a href="{{ url_for('atender', codigo=a.reporte_codigo) }}">Abrir {{ a.reporte_codigo }} en el mapa</a>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p>No hay alertas todavía.</p>
+    {% endif %}
+  </section>
+  <aside class="card">
+    <h2>Mapa de tu zona</h2>
+    <div id="mapa-inicio" class="mapa"></div>
+    <p class="hint">Los pines son reportes {% if es_operador %}de {{ usuario.area_nombre }}{% else %}de toda la ciudad{% endif %}.</p>
+  </aside>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>PunoReporta.mapaInicio();</script>
+{% endblock %}

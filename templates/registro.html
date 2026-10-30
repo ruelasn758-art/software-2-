@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Crear cuenta · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="page-head">
+  <p class="kicker">Ciudadano</p>
+  <h1>Crea tu cuenta con DNI</h1>
+  <p>Para confirmar que eres una persona real de Puno, sube tu DNI y tus datos de vivienda. Un administrador los revisa antes de que puedas reportar.</p>
+</section>
+
+<form class="grid-form" method="post" enctype="multipart/form-data" novalidate>
+  <div class="card">
+    <h2>Identidad</h2>
+    <label>Nombre completo
+      <input type="text" name="nombre" required maxlength="120" value="{{ request.form.nombre or '' }}">
+    </label>
+    <label>DNI (8 dígitos)
+      <input type="text" name="dni" required maxlength="8" inputmode="numeric" value="{{ request.form.dni or '' }}">
+    </label>
+    <label>Foto de tu DNI (frente, nítida)
+      <input type="file" name="dni_foto" accept="image/png,image/jpeg,image/webp" required>
+    </label>
+    <label>Celular (9 dígitos)
+      <input type="text" name="telefono" required maxlength="9" inputmode="numeric" value="{{ request.form.telefono or '' }}">
+    </label>
+  </div>
+  <div class="card">
+    <h2>Vivienda y acceso</h2>
+    <label>Dirección donde vives
+      <input type="text" name="direccion" required maxlength="160" placeholder="Jr. Tacna 123, Barrio Magisterial" value="{{ request.form.direccion or '' }}">
+    </label>
+    <label>Referencia (opcional)
+      <input type="text" name="referencia" maxlength="160" placeholder="Cerca del mercado Laykakota" value="{{ request.form.referencia or '' }}">
+    </label>
+    <label>Usuario
+      <input type="text" name="usuario" required maxlength="40" value="{{ request.form.usuario or '' }}">
+    </label>
+    <label>Contraseña
+      <input type="password" name="clave" required minlength="6">
+    </label>
+    <label>Repite la contraseña
+      <input type="password" name="clave2" required minlength="6">
+    </label>
+    <button class="btn btn-gold full" type="submit">Enviar a verificación</button>
+    <p class="hint">Ya tienes cuenta? <a href="{{ url_for('ingresar') }}">Ingresar</a></p>
+  </div>
+</form>
+{% endblock %}

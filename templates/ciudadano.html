@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Inicio · PUNO REPORTA{% endblock %}
+{% block content %}
+<section class="bienvenida">
+  <div>
+    <p class="kicker-azul">Bienvenido</p>
+    <h1>Reporta los problemas de tu ciudad de Puno</h1>
+  </div>
+  <a class="btn btn-reportar" href="{{ url_for('reportar') }}">+ Reportar problema</a>
+</section>
+
+<section class="tiles-tipo">
+  {% for slug, a in apartados.items() %}
+    <a class="tile tile-{{ a.clase }}" href="{{ url_for('apartado', slug=slug) }}">
+      <span class="tile-ico"></span>
+      <strong>{{ a.titulo }}</strong>
+      <small>{{ conteos[slug] }} reportes</small>
+    </a>
+  {% endfor %}
+</section>
+
+<section class="panel-dos">
+  <article class="card">
+    <div class="map-head">
+      <h2>Mis reportes</h2>
+      <a href="{{ url_for('mis_reportes') }}">Ver todos</a>
+    </div>
+    {% if mios %}
+      {% for r in mios[:5] %}
+        <a class="alerta-color cat-{{ r.categoria_nombre|lower }}" href="{{ url_for('detalle', codigo=r.codigo) }}" data-pin="{{ r.codigo }}">
+          <span class="punto"></span>
+          <div>
+            <strong>{{ r.categoria_nombre }} · {{ r.codigo }}</strong>
+            <p>{{ r.referencia or r.descripcion[:60] }}</p>
+          </div>
+          <em class="pill {{ r.estado|replace(' ', '-')|lower }}">{{ r.estado }}</em>
+        </a>
+      {% endfor %}
+    {% else %}
+      <p class="hint">Aún no tienes reportes. Empieza con una categoría de arriba.</p>
+    {% endif %}
+  </article>
+  <article class="card">
+    <div class="map-head">
+      <h2>Mapa de reportes</h2>
+      <p>Cada color es un tipo de alerta.</p>
+    </div>
+    <div id="mapa-inicio" class="mapa"></div>
+    <div class="leyenda">
+      <span><i class="dot vias"></i> Vías</span>
+      <span><i class="dot basura"></i> Basura</span>
+      <span><i class="dot alumbrado"></i> Alumbrado</span>
+      <span><i class="dot agua"></i> Agua</span>
+    </div>
+  </article>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>PunoReporta.mapaFiltrado({ id: "mapa-inicio" });</script>
+{% endblock %}

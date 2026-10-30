@@ -1,0 +1,43 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1.7cm]{geometry}
+\usepackage[table]{xcolor}
+\usepackage{tabularx,array}
+\pagestyle{empty}
+\definecolor{likegreen}{HTML}{A8D47F}
+\definecolor{dislikecoral}{HTML}{F77D68}
+\setlength{\parindent}{0pt}
+\setlength{\tabcolsep}{14pt}
+\renewcommand{\arraystretch}{2.2}
+\begin{document}
+\begin{tabularx}{\textwidth}{|X|}
+\hline
+\textbf{Centro de Idiomas CELEN --- B\'asico 6}\newline
+\textbf{Student:} Nestor Ademir Ruelas Yana\newline
+\textbf{Teacher:} Sergio Luis Alvarez\\
+\hline
+\end{tabularx}
+
+\vspace{0.5cm}
+\arrayrulecolor{white}
+\setlength{\arrayrulewidth}{5pt}
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
+\hline
+\cellcolor{likegreen}{\Huge\color{white}Like} &
+\cellcolor{dislikecoral}{\Huge\color{white}Don't like}\\[0.3cm]
+\hline
+\cellcolor{likegreen!18}I enjoy \textbf{listening} to music. &
+\cellcolor{dislikecoral!18}I don't really like \textbf{cooking}.\\[0.6cm]
+\hline
+\cellcolor{likegreen!18}I love \textbf{watching} movies. &
+\cellcolor{dislikecoral!18}I prefer \textbf{watching} a movie in my free time.\\[0.6cm]
+\hline
+\cellcolor{likegreen!18}I like \textbf{to listen} to music \textbf{to relax}. &
+\cellcolor{dislikecoral!18}\\[0.6cm]
+\hline
+\cellcolor{likegreen!18}I want \textbf{to learn} \textbf{to play} the guitar. &
+\cellcolor{dislikecoral!18}\\[0.6cm]
+\hline
+\end{tabularx}
+\end{document}

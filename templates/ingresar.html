@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Ingresar · PUNO REPORTA{% endblock %}
+{% block content %}
+<div class="auth">
+  <section class="page-head">
+    <p class="kicker">Acceso</p>
+    <h1>Entra con tu cuenta</h1>
+    <p>Ciudadano, operador de área o administrador municipal. Cada uno ve lo que le toca atender.</p>
+  </section>
+  <form class="card" method="post">
+    <label>Usuario
+      <input type="text" name="usuario" required autocomplete="username">
+    </label>
+    <label>Contraseña
+      <input type="password" name="clave" required autocomplete="current-password">
+    </label>
+    <button class="btn btn-gold full" type="submit">Ingresar</button>
+    <p class="hint center">
+      ¿No tienes cuenta? <a href="{{ url_for('registro') }}">Regístrate como ciudadano</a><br>
+      ¿Olvidaste tu contraseña? <a href="{{ url_for('recuperar') }}">Recuperar cuenta</a>
+    </p>
+  </form>
+</div>
+{% endblock %}
