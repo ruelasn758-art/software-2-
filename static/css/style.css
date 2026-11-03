@@ -1152,3 +1152,45 @@ th, td { padding: 0.85rem 1rem; text-align: left; border-bottom: 1px solid var(-
 .landing-noche .pasos-grid li { background: linear-gradient(145deg,#ffffffeb,#e8f6ffdb); border: 1px solid #cde6f2; border-radius: 18px; padding: 1.4rem; box-shadow: 0 8px 24px #17678908; }
 .landing-noche .paso-numero { background: linear-gradient(140deg,#c9effb,#97d5ef); color: #104f71; box-shadow: 0 0 0 5px #e9f7ff; }
 .landing-noche .portada-nota { border-left-color: #61badb; }
+
+/* Tema diurno para acceso, registro, recuperacion y secciones ciudadanas. */
+.tema-dia { --muted: #526d7c; --line: #c4deeb; color: #15374c; background: #edf7fc; }
+.dia-fondo { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.dia-fondo img { width: 100%; height: 100%; object-fit: cover; object-position: 55% 60%; }
+.dia-fondo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg,rgba(240,250,255,.94),rgba(226,245,255,.76) 55%,rgba(228,245,255,.62)); }
+.tema-dia .sky { display: none; }
+.tema-dia .topbar { background: linear-gradient(110deg,#fff,#e3f5ff); color: #07344a; border-bottom: 1px solid #c4e5f3; }
+.tema-dia .topbar nav a { color: #115575; opacity: 1; }
+.tema-dia .topbar nav a.activo { color: #075988; text-decoration: underline; text-underline-offset: 6px; }
+.tema-dia .nav-ghost { border-color: #80bdd6; }
+.tema-dia .card, .tema-dia .stats article, .tema-dia .table-wrap, .tema-dia .map-panel {
+ background: linear-gradient(145deg,rgba(255,255,255,.98),rgba(240,249,255,.97));
+ border: 1px solid #c5e0ee; border-radius: 18px; box-shadow: 0 12px 28px #145c7c12;
+}
+.tema-dia .page-head, .tema-dia .page-head h1, .tema-dia .card h2, .tema-dia .bienvenida h1 { color: #073c58; text-shadow: none; }
+.tema-dia .page-head p, .tema-dia .bienvenida p, .tema-dia .lead { color: #365c70; }
+.tema-dia .kicker, .tema-dia .kicker-azul { color: #176f98; }
+.tema-dia label { color: #153d53; }
+.tema-dia input, .tema-dia select, .tema-dia textarea { background: #fff; color: #15374c; border-color: #b9d6e5; }
+.tema-dia input::placeholder, .tema-dia textarea::placeholder { color: #647d8b; }
+.tema-dia :is(input,select,textarea):focus { outline: 2px solid #70c5e5; outline-offset: 2px; }
+.tema-dia .hint a, .tema-dia .card p a { color: #096b98; font-weight: 600; }
+.tema-dia .btn-ghost { color: #115575; background: #effaff; border-color: #8dc9e0; }
+.tema-dia .foot { color: #365c70; }
+.tema-dia .side-ciudadano { position: relative; z-index: 1; background: linear-gradient(180deg,#fff,#dceffc); color: #123f59; border-right: 1px solid #bedfed; }
+.tema-dia .app-main { position: relative; z-index: 1; }
+.tema-dia .side-ciudadano a { color: #123f59; }
+.tema-dia .side-ciudadano nav a:hover { background: #d6eefb; }
+.tema-dia .side-ciudadano nav a.activo { background: #cbe8f8; box-shadow: inset 3px 0 #258eba; font-weight: 700; }
+.tema-dia .side-cat.vias { background: #e8eef5; }
+.tema-dia .side-cat.basura { background: #ddf3e9; }
+.tema-dia .side-cat.alumbrado { background: #fff0c9; }
+.tema-dia .side-cat.agua { background: #dceefd; }
+.tema-dia .cat-pick, .tema-dia .chip { background: #f5fbff; border-color: #bdddea; color: #15374c; }
+.tema-dia .cat-pick.activo { border-color: #258eba; background: #e1f2fc; box-shadow: 0 0 0 2px #9bd4e755; }
+.tema-dia .dropzone { background: #eff9ff; border-color: #83bfd8; }
+.tema-dia .sugerencias { background: #fff; color: #15374c; }
+.tema-dia .ficha-punto { background: #eaf6fd; border: 1px solid #c3e1ef; }
+.tema-dia .tile { background: linear-gradient(145deg,#fff,#e6f4fd); color: #15374c; border-color: #c5e0ee; }
+.tema-dia .mapa { border-color: #b6d7e7; }
+@media(max-width:800px) { .tema-dia .side-ciudadano { height: auto; } }
