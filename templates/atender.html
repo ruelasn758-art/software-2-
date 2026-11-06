@@ -14,6 +14,14 @@
     {% if reporte.referencia %}<p><strong>Referencia:</strong> {{ reporte.referencia }}</p>{% endif %}
     {% if reporte.direccion_mapa %}<p class="hint">{{ reporte.direccion_mapa }}</p>{% endif %}
     <p class="hint">GPS {{ "%.5f"|format(reporte.lat) }}, {{ "%.5f"|format(reporte.lng) }}</p>
+    {% if fotos_referencia %}
+    <h3>Fotos de referencia</h3>
+    <div class="evidencias">
+      {% for foto in fotos_referencia %}
+      <figure><a href="{{ url_for('static', filename='uploads/fotos/' + foto.fotografia) }}" target="_blank" rel="noopener"><img src="{{ url_for('static', filename='uploads/fotos/' + foto.fotografia) }}" alt="Punto de referencia {{ loop.index }}" loading="lazy"></a></figure>
+      {% endfor %}
+    </div>
+    {% endif %}
     <div id="mapa-atender" class="mapa"></div>
     <a class="btn btn-ghost full" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat={{ reporte.lat }}&mlon={{ reporte.lng }}#map=18/{{ reporte.lat }}/{{ reporte.lng }}">Abrir ruta en OpenStreetMap</a>
   </article>
@@ -46,9 +54,10 @@
     <form class="card" method="post" enctype="multipart/form-data">
       <input type="hidden" name="accion" value="evidencia">
       <h2>Registrar evidencia</h2>
-      <label>Fotografía de la atención
-        <input type="file" name="fotografia" accept="image/png,image/jpeg,image/webp" required>
+      <label>Fotografías de la atención
+        <input type="file" name="fotografia" accept="image/png,image/jpeg,image/webp" multiple required>
       </label>
+      <p class="hint">Puedes seleccionar varias fotos. Máximo 12 MB en total por envío.</p>
       <button class="btn btn-ghost full" type="submit">Adjuntar evidencia</button>
     </form>
 

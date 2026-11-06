@@ -8,6 +8,6 @@ echo Para el telefono: conecta ambos equipos al mismo Wi-Fi.
 echo Abre la otra direccion que aparezca abajo en "Running on", distinta de 127.0.0.1.
 echo La ubicacion automatica en el telefono necesita HTTPS.
 echo Para GPS en el telefono sin certificados, abre iniciar_movil.bat.
-echo Si activaste el enlace movil, consulta las claves en private\security\cuentas-locales.txt.
+echo Para una instalacion nueva, consulta las claves en private\security\cuentas-locales.txt.
 echo.
 .\.venv\Scripts\python.exe app.py

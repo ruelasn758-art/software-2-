@@ -3,13 +3,23 @@
 {% block content %}
 <section class="page-head">
   <p class="kicker">Administrador</p>
-  <h1>Usuarios y recuperación</h1>
-  <p>Verifica DNI de ciudadanos, crea operadores de área y aprueba cuentas olvidadas.</p>
+  <h1>{{ 'Gestión de cuentas' if gestion else 'Recuperación de cuentas' }}</h1>
+  <p>{{ 'Busca ciudadanos o administra las cuentas de las entidades.' if gestion else 'Revisa las solicitudes de recuperación y confirma la identidad del titular.' }}</p>
 </section>
-
+<form class="card filtros" method="get">
+  <input type="hidden" name="vista" value="{{ 'cuentas' if gestion else 'recuperacion' }}">
+  <label>Buscar<input type="search" name="q" maxlength="150" placeholder="Nombre, usuario, DNI o {{ 'área' if gestion else 'código de solicitud' }}" value="{{ request.args.get('q','') }}"></label>
+  <label>Estado<select name="estado"><option value="">Todos</option>{% for e in estados %}<option {% if request.args.get('estado')==e %}selected{% endif %}>{{ e }}</option>{% endfor %}</select></label>
+  {% if gestion %}
+  <label>Tipo de cuenta<select name="rol"><option value="">Todos</option>{% for valor,texto in [('ciudadano','Ciudadano'),('operador','Entidad'),('administrador','Administrador')] %}<option value="{{ valor }}" {% if request.args.get('rol')==valor %}selected{% endif %}>{{ texto }}</option>{% endfor %}</select></label>
+  <label>Área<select name="area_id"><option value="">Todas</option>{% for a in areas %}<option value="{{ a.id }}" {% if request.args.get('area_id')==a.id|string %}selected{% endif %}>{{ a.nombre }}</option>{% endfor %}</select></label>
+  {% endif %}
+  <button class="btn btn-gold" type="submit">Buscar</button><a class="btn btn-ghost" href="{{ url_for('cuentas', vista='cuentas' if gestion else 'recuperacion') }}">Limpiar filtros</a>
+</form>
+{% if gestion %}
 <div class="split">
   <section class="card">
-    <h2>Cuentas</h2>
+    <h2>Cuentas ({{ personas|length }})</h2>
     <div class="table-wrap">
       <table>
         <thead>
@@ -24,11 +34,11 @@
           {% for p in personas %}
             <tr>
               <td>{{ p.nombre }}<br><small>{{ p.usuario }} · {{ p.dni }}</small></td>
-              <td>{{ p.rol }}{% if p.area_nombre %}<br><small>{{ p.area_nombre }}</small>{% endif %}</td>
+              <td>{{ "Entidad" if p.rol == "operador" else p.rol }}{% if p.area_nombre %}<br><small>{{ p.area_nombre }}</small>{% endif %}</td>
               <td><span class="pill {{ p.estado|lower }}">{{ p.estado }}</span></td>
-              <td><a href="{{ url_for('cuenta_detalle', uid=p.id) }}">Revisar</a></td>
+              <td><a href="{{ url_for('cuenta_detalle', uid=p.id) }}">{{ "Administrar" if p.rol == "operador" else "Revisar" }}</a></td>
             </tr>
-          {% endfor %}
+          {% else %}<tr><td colspan="4">No hay cuentas con estos filtros.</td></tr>{% endfor %}
         </tbody>
       </table>
     </div>
@@ -36,7 +46,8 @@
 
   <aside>
     <form class="card" method="post">
-      <h2>Nuevo operador</h2>
+      <input type="hidden" name="csrf_recuperacion" value="{{ csrf_recuperacion() }}">
+      <h2>Crear cuenta de entidad</h2>
       <p class="hint">Este usuario solo recibe alertas de su área, ve el mapa y verifica en campo.</p>
       <label>Nombre
         <input type="text" name="nombre" required>
@@ -58,15 +69,16 @@
         </select>
       </label>
       <label>Contraseña inicial
-        <input type="text" name="clave" required minlength="6" value="opera123">
+        <input type="password" name="clave" required minlength="6" autocomplete="new-password">
       </label>
-      <button class="btn btn-gold full" type="submit">Crear operador</button>
+      <button class="btn btn-gold full" type="submit">Crear cuenta de entidad</button>
     </form>
   </aside>
 </div>
 
+{% else %}
 <section class="card" style="margin-top:1rem">
-  <h2>Recuperación de cuentas</h2>
+  <h2>Solicitudes ({{ recuperaciones|length }})</h2>
   {% if recuperaciones %}
     <div class="table-wrap">
       <table>
@@ -75,7 +87,7 @@
             <th>Solicitud</th>
             <th>Ciudadano</th>
             <th>Estado</th>
-            <th>Código</th>
+            <th>Contacto / recuperación</th>
             <th></th>
           </tr>
         </thead>
@@ -85,11 +97,15 @@
               <td>{{ r.codigo }}</td>
               <td>{{ r.nombre }} ({{ r.usuario }})<br><small>DNI {{ r.dni }} · {{ r.telefono }}</small></td>
               <td><span class="pill {{ r.estado|lower }}">{{ r.estado }}</span></td>
-              <td>{{ r.codigo_clave or '—' }}</td>
+              <td>{% if r.correo_recuperacion %}{{ r.correo_recuperacion }}<br><small>Solicitante: {{ r.nombre_solicitante }}</small><br><a href="{{ url_for('cuenta_detalle', uid=r.usuario_id) }}">Revisar DNI guardado</a>{% else %}{{ r.codigo_clave or '—' }}{% endif %}</td>
               <td>
-                {% if r.estado == 'Pendiente' %}
+                {% if r.estado == 'Pendiente' or (r.correo_recuperacion and r.estado == 'Aprobada') %}
                   <form method="post" action="{{ url_for('resolver_recuperacion', rid=r.id) }}" class="inline">
-                    <button class="btn btn-gold" name="accion" value="aprobar">Aprobar</button>
+                    {% if r.correo_recuperacion %}
+                    <input type="hidden" name="csrf_recuperacion" value="{{ csrf_recuperacion() }}">
+                    <label><input type="checkbox" name="identidad_confirmada" value="si"> Verifiqué el DNI y confirmé el correo con el titular mediante su celular registrado.</label>
+                    {% endif %}
+                    <button class="btn btn-gold" name="accion" value="aprobar">{% if r.correo_recuperacion %}{% if r.estado == 'Aprobada' %}Reenviar enlace{% else %}Aprobar y enviar enlace{% endif %}{% else %}Aprobar{% endif %}</button>
                     <button class="btn btn-ghost" name="accion" value="rechazar">Rechazar</button>
                   </form>
                 {% endif %}
@@ -103,4 +119,5 @@
     <p>No hay solicitudes.</p>
   {% endif %}
 </section>
+{% endif %}
 {% endblock %}

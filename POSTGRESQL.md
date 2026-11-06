@@ -54,7 +54,7 @@ Cerrar una instancia anterior de la aplicación y abrir `iniciar.bat`, o usar
 Si falla una conexión configurada, el software muestra el error y no cambia
 silenciosamente a SQLite.
 
-`tests/verificar_postgres.py` comprueba los flujos en una copia temporal que
+`tests/verificar_postgres.py` comprueba los flujos en una base desechable creada desde cero (ver README), que
 elimina al terminar. `database/01_tablas.sql` contiene las tablas solicitadas;
 `database/02_integracion.sql`, las vistas y reglas de integración.
 No repetir `database/migrar_postgres.py` en la base ya migrada: el script se

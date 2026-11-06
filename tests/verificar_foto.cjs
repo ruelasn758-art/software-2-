@@ -1,9 +1,9 @@
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const fs = require('node:fs');
-const {chromium} = require(require.resolve('playwright', {paths: ['C:/Users/ademi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules']}));
+const {chromium} = require('playwright');
 (async () => {
- const browser = await chromium.launch({channel:'msedge', headless:true});
+ const browser = await chromium.launch({headless:true});
  try {
   const context = await browser.newContext({ignoreHTTPSErrors:true, viewport:{width:390,height:844}});
   await context.addCookies([{name:'session',value:process.env.MOBILE_TEST_COOKIE,url:process.env.MOBILE_TEST_URL}]);
@@ -33,7 +33,7 @@ const {chromium} = require(require.resolve('playwright', {paths: ['C:/Users/adem
   await page.locator('#cambiar-categoria').click();
   await page.locator('[data-categoria="Fuga"]').click();
   assert.equal(await page.locator('.cat-pick.activo').getAttribute('data-categoria'),'Fuga');
-  assert.match(await page.locator('#area-hint').textContent(),/SEDAPAR/);
+  assert.match(await page.locator('#area-hint').textContent(),/EMSAPUNO/);
   await upload();
   await page.locator('[data-categoria="Bache"]').click();
   await page.evaluate(()=>fotoWorker.resultado('Basura'));

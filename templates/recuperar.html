@@ -4,19 +4,24 @@
 <div class="auth">
   <section class="page-head">
     <p class="kicker">Recuperación</p>
-    <h1>¿Olvidaste tu contraseña?</h1>
-    <p>Confirma tu usuario, DNI y celular. El administrador revisa tu identidad y te entrega un código.</p>
+    <h1>¿Olvidaste tu cuenta o contraseña?</h1>
+    <p>Ingresa tu DNI, nombres, celular registrado y un correo al que tengas acceso. El administrador revisará tu identidad con el DNI guardado, podrá contactarte y, al aprobar la solicitud, enviará un enlace para recuperar tu usuario y contraseña.</p>
   </section>
   <form class="card" method="post">
-    <label>Usuario
-      <input type="text" name="usuario" required>
+    <input type="hidden" name="csrf_recuperacion" value="{{ csrf_recuperacion() }}">
+    <label>Nombres y apellidos
+      <input type="text" name="nombre" maxlength="150" autocomplete="name" required>
     </label>
     <label>DNI
       <input type="text" name="dni" required maxlength="8" inputmode="numeric">
     </label>
-    <label>Celular
+    <label>Celular registrado
       <input type="text" name="telefono" required maxlength="9" inputmode="numeric">
     </label>
+    <label>Correo para recibir la recuperación
+      <input type="email" name="correo" maxlength="254" autocomplete="email" required>
+    </label>
+    <p class="hint">No necesitas recordar tu usuario. El DNI por sí solo no autoriza el cambio de contraseña. Revisa también la carpeta Spam después de la aprobación.</p>
     <button class="btn btn-gold full" type="submit">Pedir recuperación</button>
     <p class="hint center">Si ya te dieron el código, <a href="{{ url_for('recuperar_clave') }}">cámbiala aquí</a>.</p>
   </form>

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Recuperar cuenta · PUNO REPORTA{% endblock %}
+{% block content %}
+<div class="auth">
+  <section class="page-head">
+    <p class="kicker">Recuperación de cuenta</p>
+    <h1>Crea una nueva contraseña</h1>
+    <p>El enlace vence en 30 minutos y solo puede usarse una vez.</p>
+  </section>
+  {% if valido %}
+  <form class="card" method="post" action="{{ url_for('recuperar_enlace') }}">
+    <p>Tu usuario: <strong>{{ usuario_recuperado }}</strong></p>
+    <input type="hidden" name="csrf_recuperacion" value="{{ csrf_recuperacion() }}">
+    <input type="hidden" name="token" value="{{ token }}">
+    <label>Nueva contraseña<input type="password" name="clave" minlength="8" maxlength="256" autocomplete="new-password" required></label>
+    <label>Repite la contraseña<input type="password" name="clave2" minlength="8" maxlength="256" autocomplete="new-password" required></label>
+    <button class="btn btn-gold full" type="submit">Guardar contraseña</button>
+  </form>
+  {% else %}
+  <div class="card"><h2>Enlace no disponible</h2><p>El enlace venció, ya se utilizó o fue reemplazado. Pide al administrador reenviarlo o solicita nuevamente la recuperación.</p><a class="btn btn-gold" href="{{ url_for('recuperar') }}">Solicitar recuperación</a></div>
+  {% endif %}
+</div>
+{% endblock %}

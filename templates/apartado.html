@@ -22,7 +22,7 @@
           <span class="punto"></span>
           <div>
             <strong>{{ r.codigo }}</strong>
-            <p>{{ r.referencia or r.descripcion[:70] }}</p>
+            <p>{{ (r.referencia or r.descripcion[:70]) if r.usuario_id == usuario.id else r.area_nombre }}</p>
           </div>
           <em class="pill {{ r.estado|replace(' ', '-')|lower }}">{{ r.estado }}</em>
         </a>

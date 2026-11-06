@@ -4,3 +4,18 @@ __pycache__/
 venv/
 *.pyc
 private/postgres/postgis.zip
+private/correo/
+
+# Datos de ejecución y material de pruebas: se conservan en cada PC.
+private/
+.venv/
+.pytest_cache/
+*.db
+*.db-*
+*.sqlite*
+static/uploads/
+tests/*.png
+/_shot.png
+/imagen reporta puno
+/Hoja_taller_sesion4_EST323.pdf
+/ENLACE_MOVIL.txt

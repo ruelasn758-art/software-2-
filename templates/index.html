@@ -6,7 +6,7 @@
   <h1>Reporta lo que la ciudad necesita atender.</h1>
   <p class="lead">
     Baches, luminarias apagadas, basura y fugas. Marca el punto, adjunta una foto
-    y la municipalidad asigna el área responsable.
+    y el sistema asigna el reporte al área responsable.
   </p>
   <div class="hero-actions">
     {% if es_ciudadano %}
@@ -46,7 +46,7 @@
   {% for c in categorias %}
     <article class="cat-card">
       <h3>{{ c.nombre }}</h3>
-      <p>Tipo {{ c.tipo }} · código {{ c.codigo }}</p>
+      <p>Incidencias de {{ c.nombre|lower }}</p>
     </article>
   {% endfor %}
 </section>

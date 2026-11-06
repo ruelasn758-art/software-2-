@@ -194,7 +194,7 @@ const PunoReporta = {
         preview.src = reader.result;
         preview.hidden = false;
         zona.classList.add("con-foto");
-        if (analizador) analizador.analizar(reader.result);
+        if (analizador && document.getElementById("usar-ia")?.checked !== false) analizador.analizar(reader.result);
       };
       reader.onerror = () => {
         if (version === versionFoto && analizador) analizador.mensaje("No se pudo leer la foto. Elige otra imagen.");

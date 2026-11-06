@@ -1,10 +1,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const {chromium} = require(require.resolve('playwright', {paths: [process.env.NODE_PATH || 'C:/Users/ademi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules']}));
+const {chromium} = require('playwright');
 (async () => {
   const url = fs.readFileSync(path.join(__dirname, '../ENLACE_MOVIL.txt'), 'utf8').match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/)[0];
-  const browser = await chromium.launch({channel: 'msedge', headless: true});
+  const browser = await chromium.launch({headless: true});
   try {
     const context = await browser.newContext({viewport: {width: 390, height: 844}, permissions: ['geolocation'], geolocation: {latitude: -15.8402, longitude: -70.0219}});
     const page = await context.newPage();

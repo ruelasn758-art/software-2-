@@ -81,6 +81,8 @@ def main():
                 origen.backup(copia)
             for filename in ('01_tablas.sql','02_integracion.sql'):
                 conn.execute((BASE/'database'/filename).read_text(encoding='utf-8'))
+            extra=(BASE/'database/03_recuperacion_correo.sql').read_text(encoding='utf-8').strip().removeprefix('BEGIN;').removesuffix('COMMIT;')
+            conn.execute(extra)
             migrar(conn,origen)
         apppass=secrets.token_urlsafe(32)
         if conn.execute('SELECT 1 FROM pg_roles WHERE rolname=%s',(APPUSER,)).fetchone():

@@ -27,6 +27,7 @@
   <aside>
     {% if persona.rol == 'ciudadano' %}
       <form class="card" method="post">
+        <input type="hidden" name="csrf_recuperacion" value="{{ csrf_recuperacion() }}">
         <h2>Verificación</h2>
         <label>Motivo (si rechazas o suspendes)
           <textarea name="motivo" rows="3">{{ persona.motivo or '' }}</textarea>
@@ -36,15 +37,21 @@
         <button class="btn btn-ghost full" name="accion" value="suspender">Suspender</button>
       </form>
     {% endif %}
-    {% if reportes %}
-      <div class="card">
-        <h2>Reportes</h2>
-        <ul>
-          {% for r in reportes %}
-            <li><a href="{{ url_for('detalle', codigo=r.codigo) }}">{{ r.codigo }}</a> · {{ r.estado }}</li>
-          {% endfor %}
-        </ul>
-      </div>
+    {% if persona.rol == 'operador' %}
+    <form class="card" method="post">
+      <h2>Administrar cuenta de entidad</h2>
+      <input type="hidden" name="csrf_recuperacion" value="{{ csrf_recuperacion() }}">
+      <label>Nombre del responsable o entidad<input name="nombre" value="{{ persona.nombre }}" minlength="5" maxlength="120" required></label>
+      <label>Celular<input name="telefono" value="{{ persona.telefono or '' }}" pattern="9[0-9]{8}" maxlength="9" required></label>
+      <label>Área que recibe las alertas<select name="area_id" required>{% for a in areas %}<option value="{{ a.id }}" {% if a.id==persona.area_id %}selected{% endif %}>{{ a.nombre }}</option>{% endfor %}</select></label>
+      <label>Nueva contraseña (opcional)<input type="password" name="clave" minlength="8" maxlength="256" autocomplete="new-password" placeholder="Dejar vacío para conservarla"></label>
+      <button class="btn btn-gold" name="accion" value="editar">Guardar cambios</button>
+    </form>
+    <form class="card" method="post">
+      <input type="hidden" name="csrf_recuperacion" value="{{ csrf_recuperacion() }}">
+      {% if persona.estado=='Suspendido' %}<button class="btn btn-ghost" name="accion" value="reactivar">Reactivar cuenta</button>
+      {% else %}<button class="btn btn-ghost" name="accion" value="suspender">Suspender cuenta</button>{% endif %}
+    </form>
     {% endif %}
   </aside>
 </div>

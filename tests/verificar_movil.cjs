@@ -1,10 +1,10 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const {chromium} = require(require.resolve('playwright', {paths: [process.env.NODE_PATH || 'C:/Users/ademi/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules']}));
+const {chromium} = require('playwright');
 
 (async () => {
-  const browser = await chromium.launch({channel: 'msedge', headless: true});
+  const browser = await chromium.launch({headless: true});
   try {
     // La confianza TLS se comprueba sin excepciones en verificar_movil.py.
     const context = await browser.newContext({ignoreHTTPSErrors: true, permissions: ['geolocation'], geolocation: {latitude: -15.8402, longitude: -70.0219, accuracy: 10}});

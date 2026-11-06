@@ -20,6 +20,14 @@
       {% if reporte.referencia %}<li><strong>Referencia:</strong> {{ reporte.referencia }}</li>{% endif %}
       <li><strong>Ciudadano:</strong> {{ reporte.ciudadano_nombre }}</li>
     </ul>
+    {% if fotos_referencia %}
+    <h3>Fotos de referencia</h3>
+    <div class="evidencias">
+      {% for foto in fotos_referencia %}
+      <figure><a href="{{ url_for('static', filename='uploads/fotos/' + foto.fotografia) }}" target="_blank" rel="noopener"><img src="{{ url_for('static', filename='uploads/fotos/' + foto.fotografia) }}" alt="Punto de referencia {{ loop.index }}" loading="lazy"></a></figure>
+      {% endfor %}
+    </div>
+    {% endif %}
     <div id="mapa-detalle" class="mapa"></div>
   </article>
 

@@ -109,22 +109,41 @@ def asegurar_db():
 
 @app.before_request
 def proteger_acceso_publico():
-    if not app.config["PUBLIC_TUNNEL"]:
+    filename = (request.view_args or {}).get("filename", "")
+    fichero = (Path(app.static_folder) / filename).resolve() if request.endpoint == "static" else None
+    uploads = Path(app.static_folder, "uploads").resolve()
+    foto = fichero is not None and fichero.is_relative_to(uploads)
+    if request.endpoint == "static" and not foto:
         return None
     user = usuario_actual()
     if user and user["estado"] == "Suspendido":
         session.clear()
         user = None
-    if request.method == "POST":
+    if app.config["PUBLIC_TUNNEL"] and request.method == "POST":
         origen = request.headers.get("Origin") or request.headers.get("Referer")
         if not origen or urlsplit(origen).netloc != request.host:
             abort(403)
     privadas = {"api_reportes", "api_buscar_lugar", "api_direccion", "detalle", "consultar"}
-    foto = request.endpoint == "static" and (request.view_args or {}).get("filename", "").startswith("uploads/")
     if not user and (request.endpoint in privadas or foto):
         if (request.endpoint or "").startswith("api_") or foto:
             abort(401)
         return redirect(url_for("ingresar"))
+    if foto:
+        partes = fichero.relative_to(uploads).parts
+        if len(partes) != 2: abort(404)
+        carpeta, nombre = partes
+        db = get_db()
+        if carpeta.lower() == "evidencias":
+            consulta = "SELECT r.* FROM reportes r JOIN evidencias e ON r.id=e.reporte_id WHERE e.fotografia=?"
+            params = (nombre,)
+        elif carpeta.lower() == "fotos":
+            refs = ("SELECT id_reporte FROM public.archivo_reporte WHERE ruta_archivo=? AND descripcion='REFERENCIA'"
+                    if getattr(db,"postgres",False) else "SELECT reporte_id FROM fotos_referencia WHERE fotografia=?")
+            consulta = "SELECT r.* FROM reportes r WHERE r.foto=? OR r.id IN ("+refs+")"
+            params = (nombre,nombre)
+        else: abort(404)
+        r = db.execute(consulta, params).fetchone()
+        if not r or not (r["usuario_id"] == user["id"] or puede_atender(user,r)): abort(404)
 
 
 def get_db() -> sqlite3.Connection:
@@ -168,6 +187,11 @@ def init_db() -> None:
     db.execute("PRAGMA foreign_keys = ON")
     db.executescript(
         """
+        CREATE TABLE IF NOT EXISTS fotos_referencia (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            reporte_id INTEGER NOT NULL REFERENCES reportes(id),
+            fotografia TEXT NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS areas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             codigo TEXT UNIQUE NOT NULL,
@@ -254,6 +278,8 @@ def init_db() -> None:
         );
         """
     )
+    ensure_column(db, "recuperaciones", "correo_recuperacion", "TEXT")
+    ensure_column(db, "recuperaciones", "nombre_solicitante", "TEXT")
     ensure_column(db, "reportes", "usuario_id", "INTEGER REFERENCES usuarios(id)")
     ensure_column(db, "reportes", "verificado_sitio", "INTEGER NOT NULL DEFAULT 0")
     ensure_column(db, "reportes", "operador_id", "INTEGER REFERENCES usuarios(id)")
@@ -266,8 +292,8 @@ def init_db() -> None:
             [
                 ("AR-OP", "Obras Públicas", "municipal"),
                 ("AR-LP", "Limpieza Pública", "municipal"),
-                ("AR-AP", "Alumbrado Público", "municipal"),
-                ("AR-SD", "SEDAPAR", "externa"),
+                ("AR-AP", "Electro Puno · Área de Alumbrado Público", "externa"),
+                ("AR-SD", "EMSAPUNO · Área de Operaciones de Agua y Alcantarillado", "externa"),
             ],
         )
         db.executemany(
@@ -283,8 +309,11 @@ def init_db() -> None:
             ],
         )
 
+    db.execute("UPDATE areas SET nombre='EMSAPUNO · Área de Operaciones de Agua y Alcantarillado' WHERE codigo='AR-SD' AND nombre='SEDAPAR'")
+    db.execute("UPDATE areas SET nombre='Electro Puno · Área de Alumbrado Público',dependencia='externa' WHERE codigo='AR-AP' AND nombre='Alumbrado Público'")
     if db.execute("SELECT COUNT(*) FROM usuarios").fetchone()[0] == 0:
         ahora = datetime.now().isoformat(timespec="seconds")
+        claves = {nombre: secrets.token_urlsafe(24) for nombre in ("admin","operador")}
         alumbrado = db.execute("SELECT id FROM areas WHERE codigo = 'AR-AP'").fetchone()[0]
         db.execute(
             """
@@ -296,7 +325,7 @@ def init_db() -> None:
             (
                 "US-2026-0001",
                 "admin",
-                generate_password_hash("admin123"),
+                generate_password_hash(claves["admin"]),
                 "Administrador municipal",
                 "10000001",
                 "951000001",
@@ -315,7 +344,7 @@ def init_db() -> None:
             (
                 "US-2026-0002",
                 "operador",
-                generate_password_hash("opera123"),
+                generate_password_hash(claves["operador"]),
                 "Técnico de Alumbrado",
                 "10000002",
                 "951000002",
@@ -325,6 +354,11 @@ def init_db() -> None:
                 ahora,
             ),
         )
+        archivo = DB_PATH.parent / "private" / "security" / "cuentas-locales.txt"
+        archivo.parent.mkdir(parents=True, exist_ok=True)
+        with archivo.open("a", encoding="utf-8") as salida:
+            for nombre, clave in claves.items():
+                salida.write(f"Usuario: {nombre}\nClave: {clave}\n\n")
     db.commit()
     db.close()
 
@@ -487,16 +521,12 @@ def generar_notificacion(reporte_id: int, mensaje: str) -> sqlite3.Row:
     return db.execute("SELECT * FROM notificaciones WHERE codigo = ?", (codigo,)).fetchone()
 
 
-def crear_alertas(mensaje: str, *, reporte_id: int | None = None, area_id: int | None = None, roles: tuple[str, ...] = ("administrador", "operador")) -> None:
+def crear_alertas(mensaje: str, *, reporte_id: int, area_id: int) -> None:
     db = get_db()
-    sql = "SELECT id FROM usuarios WHERE estado = 'Verificado' AND rol IN ({})".format(
-        ",".join("?" * len(roles))
-    )
-    params: list = list(roles)
-    if area_id is not None:
-        sql += " AND (rol = 'administrador' OR area_id = ?)"
-        params.append(area_id)
-    destinos = db.execute(sql, params).fetchall()
+    destinos = db.execute(
+        "SELECT id FROM usuarios WHERE estado='Verificado' AND rol='operador' AND area_id=?",
+        (area_id,),
+    ).fetchall()
     ahora = datetime.now().isoformat(timespec="seconds")
     for fila in destinos:
         db.execute(
@@ -507,6 +537,33 @@ def crear_alertas(mensaje: str, *, reporte_id: int | None = None, area_id: int |
             (fila["id"], reporte_id, mensaje, ahora),
         )
     db.commit()
+
+
+def guardar_referencias(reporte_id, fotos):
+    db = get_db()
+    guardados = []
+    try:
+        for foto in fotos:
+            nombre = guardar_archivo(foto, UPLOAD_FOTOS)
+            guardados.append(nombre)
+            if getattr(db, 'postgres', False):
+                db.execute("INSERT INTO public.archivo_reporte (id_reporte, tipo_archivo, ruta_archivo, nombre_original, descripcion) VALUES (?, 'INCIDENCIA', ?, ?, 'REFERENCIA')",
+                           (reporte_id, nombre, secure_filename(foto.filename)))
+            else:
+                db.execute("INSERT INTO fotos_referencia (reporte_id, fotografia) VALUES (?, ?)", (reporte_id, nombre))
+        db.commit()
+    except Exception:
+        db.rollback()
+        for nombre in guardados:
+            (UPLOAD_FOTOS / nombre).unlink(missing_ok=True)
+        raise
+
+
+def listar_referencias(reporte_id):
+    db = get_db()
+    if getattr(db, 'postgres', False):
+        return db.execute("SELECT ruta_archivo AS fotografia FROM public.archivo_reporte WHERE id_reporte = ? AND descripcion = 'REFERENCIA' AND tipo_archivo = 'INCIDENCIA' ORDER BY id_archivo", (reporte_id,)).fetchall()
+    return db.execute("SELECT fotografia FROM fotos_referencia WHERE reporte_id = ? ORDER BY id", (reporte_id,)).fetchall()
 
 
 def reporte_completo(codigo: str) -> dict | None:
@@ -532,7 +589,7 @@ def reporte_completo(codigo: str) -> dict | None:
         "SELECT * FROM notificaciones WHERE reporte_id = ? ORDER BY id DESC",
         (fila["id"],),
     ).fetchall()
-    return {"reporte": fila, "evidencias": evidencias, "notificaciones": notificaciones}
+    return {"reporte": fila, "evidencias": evidencias, "notificaciones": notificaciones, "fotos_referencia": listar_referencias(fila["id"])}
 
 
 def listar_reportes(
@@ -566,8 +623,6 @@ def listar_reportes(
 
 
 def puede_atender(user, reporte) -> bool:
-    if user["rol"] == "administrador":
-        return True
     if user["rol"] == "operador" and user["area_id"] == reporte["area_id"]:
         return True
     return False
@@ -578,15 +633,13 @@ def inject_globals():
     user = usuario_actual()
     n_alertas = 0
     n_pendientes = 0
-    if user:
+    if user and user["rol"] == "operador":
         n_alertas = get_db().execute(
-            "SELECT COUNT(*) FROM alertas WHERE usuario_id = ? AND leida = 0",
-            (user["id"],),
+            "SELECT COUNT(*) FROM alertas a JOIN reportes r ON r.id=a.reporte_id WHERE a.usuario_id=? AND r.area_id=? AND a.leida=0",
+            (user["id"],user["area_id"]),
         ).fetchone()[0]
-        if user["rol"] == "administrador":
-            n_pendientes = get_db().execute(
-                "SELECT COUNT(*) FROM usuarios WHERE rol = 'ciudadano' AND estado = 'Pendiente'"
-            ).fetchone()[0]
+    if user and user["rol"] == "administrador":
+        n_pendientes = get_db().execute("SELECT COUNT(*) FROM recuperaciones WHERE estado='Pendiente'").fetchone()[0]
     return {
         "puno_lat": PUNO_LAT,
         "puno_lng": PUNO_LNG,
@@ -608,7 +661,7 @@ def inicio_segun_rol():
     if not user:
         return redirect(url_for("index"))
     if user["rol"] == "administrador":
-        return redirect(url_for("panel"))
+        return redirect(url_for("cuentas"))
     if user["rol"] == "operador":
         return redirect(url_for("alertas"))
     return redirect(url_for("index"))
@@ -624,9 +677,11 @@ def index():
             for slug, meta in APARTADOS.items()
         }
         return render_template("ciudadano.html", mios=mios, conteos=conteos)
+    if user and user["rol"] == "administrador":
+        return redirect(url_for("cuentas"))
     if not user:
         return render_template("landing.html", landing=True)
-    reportes = listar_reportes()
+    reportes = listar_reportes(area_id=user["area_id"]) if user["rol"]=="operador" and user["area_id"] else []
     categorias = get_db().execute("SELECT * FROM categorias ORDER BY nombre").fetchall()
     totales = {
         "total": len(reportes),
@@ -657,6 +712,8 @@ def mapa_ciudadano():
 def api_reportes():
     user = usuario_actual()
     area_id = user["area_id"] if user and user["rol"] == "operador" else None
+    if user and user["rol"] == "operador" and (not area_id or user["estado"] != "Verificado"):
+        return jsonify([])
     categoria = request.args.get("categoria") or None
     mios = request.args.get("mios") == "1"
     usuario_id = user["id"] if mios and user and user["rol"] == "ciudadano" else None
@@ -670,9 +727,9 @@ def api_reportes():
                 "estado": r["estado"],
                 "categoria": r["categoria_nombre"],
                 "area": r["area_nombre"],
-                "descripcion": r["descripcion"],
-                "referencia": dict(r).get("referencia") or "",
-                "direccion": dict(r).get("direccion_mapa") or "",
+                "descripcion": r["descripcion"] if r["usuario_id"] == user["id"] or puede_atender(user,r) else "",
+                "referencia": (dict(r).get("referencia") or "") if r["usuario_id"] == user["id"] or puede_atender(user,r) else "",
+                "direccion": (dict(r).get("direccion_mapa") or "") if r["usuario_id"] == user["id"] or puede_atender(user,r) else "",
                 "color": next(
                     (m["color"] for m in APARTADOS.values() if m["categoria"] == r["categoria_nombre"]),
                     "#1E7AE6",
@@ -842,10 +899,6 @@ def registro():
         )
         db.commit()
         nuevo = db.execute("SELECT id FROM usuarios WHERE usuario = ?", (usuario,)).fetchone()
-        crear_alertas(
-            f"Nueva cuenta ciudadana pendiente de verificación: {nombre} (DNI {dni}).",
-            roles=("administrador",),
-        )
         session["usuario_id"] = nuevo["id"]
         session["rol"] = "ciudadano"
         flash("Cuenta creada. Un administrador revisará tu DNI antes de que puedas reportar.", "ok")
@@ -855,47 +908,7 @@ def registro():
 
 @app.route("/recuperar", methods=["GET", "POST"])
 def recuperar():
-    if request.method == "POST":
-        usuario = (request.form.get("usuario") or "").strip().lower()
-        dni = (request.form.get("dni") or "").strip()
-        telefono = (request.form.get("telefono") or "").strip()
-        fila = get_db().execute(
-            "SELECT * FROM usuarios WHERE usuario = ? AND dni = ? AND telefono = ?",
-            (usuario, dni, telefono),
-        ).fetchone()
-        if not fila:
-            flash("Los datos no coinciden con ninguna cuenta.", "error")
-            return render_template("recuperar.html"), 400
-        abierta = get_db().execute(
-            """
-            SELECT id FROM recuperaciones
-            WHERE usuario_id = ? AND estado IN ('Pendiente', 'Aprobada')
-            """,
-            (fila["id"],),
-        ).fetchone()
-        if abierta:
-            flash("Ya tienes una solicitud de recuperación en curso. Espera al administrador.", "ok")
-            return redirect(url_for("recuperar_clave"))
-        db = get_db()
-        db.execute(
-            """
-            INSERT INTO recuperaciones (codigo, usuario_id, estado, creado_en)
-            VALUES (?, ?, 'Pendiente', ?)
-            """,
-            (
-                siguiente_codigo("RC", "recuperaciones"),
-                fila["id"],
-                datetime.now().isoformat(timespec="seconds"),
-            ),
-        )
-        db.commit()
-        crear_alertas(
-            f"Solicitud de recuperación de cuenta: {fila['nombre']} ({fila['usuario']}).",
-            roles=("administrador",),
-        )
-        flash("Solicitud enviada. El administrador verificará tu identidad y te dará un código.", "ok")
-        return redirect(url_for("recuperar_clave"))
-    return render_template("recuperar.html")
+    return recuperacion_correo.solicitar()
 
 
 @app.route("/recuperar/clave", methods=["GET", "POST"])
@@ -966,6 +979,7 @@ def reportar():
         lat_raw = request.form.get("lat")
         lng_raw = request.form.get("lng")
         foto = request.files.get("foto")
+        referencias = [f for f in request.files.getlist("fotos_referencia") if f.filename]
 
         if not descripcion or len(descripcion) < 10:
             errores.append("Describe la incidencia con al menos 10 caracteres.")
@@ -992,6 +1006,9 @@ def reportar():
         elif not allowed_file(foto.filename):
             errores.append("La foto debe ser JPG, PNG o WEBP.")
 
+        if any(not allowed_file(f.filename) for f in referencias):
+            errores.append("Las fotos de referencia deben ser JPG, PNG o WEBP.")
+
         if errores:
             for e in errores:
                 flash(e, "error")
@@ -1013,6 +1030,7 @@ def reportar():
                 "direccion_mapa": direccion_mapa,
             }
         )
+        guardar_referencias(reporte["id"], referencias)
         clasificar_reporte(reporte["id"], catalogo["categoria_id"])
         asignar_responsable(reporte["id"], catalogo["area_id"])
         generar_notificacion(
@@ -1063,6 +1081,8 @@ def detalle(codigo: str):
         flash("No se encontró ese reporte.", "error")
         return redirect(url_for("consultar"))
     user = usuario_actual()
+    if not (data["reporte"]["usuario_id"] == user["id"] or puede_atender(user,data["reporte"])):
+        return render_template("estado_publico.html", reporte=data["reporte"])
     if user:
         get_db().execute(
             "UPDATE alertas SET leida = 1 WHERE usuario_id = ? AND reporte_id = ?",
@@ -1073,15 +1093,12 @@ def detalle(codigo: str):
 
 
 @app.route("/panel")
-@login_required("administrador", "operador")
+@login_required("operador")
 def panel():
     user = usuario_actual()
     estado = request.args.get("estado") or None
-    area_raw = request.args.get("area_id")
-    area_id = int(area_raw) if area_raw and area_raw.isdigit() else None
-    if user["rol"] == "operador":
-        area_id = user["area_id"]
-    reportes = listar_reportes(estado=estado, area_id=area_id)
+    area_id = user["area_id"]
+    reportes = listar_reportes(estado=estado, area_id=area_id) if area_id else []
     areas = get_db().execute("SELECT * FROM areas ORDER BY nombre").fetchall()
     return render_template(
         "municipalidad.html",
@@ -1093,27 +1110,27 @@ def panel():
 
 
 @app.route("/alertas")
-@login_required("administrador", "operador")
+@login_required("operador")
 def alertas():
     user = usuario_actual()
     filas = get_db().execute(
         """
         SELECT al.*, r.codigo AS reporte_codigo, r.lat, r.lng, r.estado AS reporte_estado
         FROM alertas al
-        LEFT JOIN reportes r ON r.id = al.reporte_id
-        WHERE al.usuario_id = ?
+        JOIN reportes r ON r.id = al.reporte_id
+        WHERE al.usuario_id = ? AND r.area_id = ?
         ORDER BY al.id DESC
         """,
-        (user["id"],),
+        (user["id"],user["area_id"]),
     ).fetchall()
     return render_template("alertas.html", alertas=filas)
 
 
 @app.route("/alertas/leer-todas", methods=["POST"])
-@login_required("administrador", "operador")
+@login_required("operador")
 def leer_alertas():
     user = usuario_actual()
-    get_db().execute("UPDATE alertas SET leida = 1 WHERE usuario_id = ?", (user["id"],))
+    get_db().execute("UPDATE alertas SET leida = 1 WHERE usuario_id = ? AND reporte_id IN (SELECT id FROM reportes WHERE area_id=?)", (user["id"], user["area_id"]))
     get_db().commit()
     return redirect(url_for("alertas"))
 
@@ -1134,7 +1151,7 @@ def municipal_logout():
 
 
 @app.route("/municipalidad/reporte/<codigo>", methods=["GET", "POST"])
-@login_required("administrador", "operador")
+@login_required("operador")
 def atender(codigo: str):
     user = usuario_actual()
     data = reporte_completo(codigo.upper())
@@ -1163,13 +1180,14 @@ def atender(codigo: str):
             flash(f"Estado actualizado a {nuevo}. Se notificó al ciudadano.", "ok")
 
         elif accion == "evidencia":
-            foto = request.files.get("fotografia")
-            if not foto or not foto.filename or not allowed_file(foto.filename):
+            fotos = [f for f in request.files.getlist("fotografia") if f.filename]
+            if not fotos or any(not allowed_file(f.filename) for f in fotos):
                 flash("Adjunta una fotografía válida de la atención.", "error")
                 return redirect(url_for("atender", codigo=codigo))
-            nombre_foto = guardar_archivo(foto, UPLOAD_EVIDENCIAS)
             fecha = datetime.now().strftime("%d/%m/%Y")
-            registrar_evidencia(reporte["id"], nombre_foto, fecha)
+            for foto in fotos:
+                nombre_foto = guardar_archivo(foto, UPLOAD_EVIDENCIAS)
+                registrar_evidencia(reporte["id"], nombre_foto, fecha)
             generar_notificacion(
                 reporte["id"],
                 f"Se registró evidencia de atención en el reporte {reporte['codigo']}.",
@@ -1207,6 +1225,7 @@ def atender(codigo: str):
 def cuentas():
     db = get_db()
     if request.method == "POST":
+        recuperacion_correo.verificar_csrf()
         nombre = (request.form.get("nombre") or "").strip()
         usuario = (request.form.get("usuario") or "").strip().lower()
         dni = (request.form.get("dni") or "").strip()
@@ -1259,28 +1278,35 @@ def cuentas():
                     ahora,
                 ),
             )
+            if getattr(db, "postgres", False):
+                db.execute("UPDATE public.usuario SET id_entidad=(SELECT id_entidad FROM public.area_entidad WHERE id_area=?) WHERE usuario=?", (area_id, usuario))
             db.commit()
             flash(f"Operador {usuario} creado. Recibirá las alertas de su área.", "ok")
-        return redirect(url_for("cuentas"))
+        return redirect(url_for("cuentas",vista="cuentas"))
 
-    personas = db.execute(
-        """
-        SELECT u.*, a.nombre AS area_nombre
-        FROM usuarios u
-        LEFT JOIN areas a ON a.id = u.area_id
-        ORDER BY u.rol, u.estado, u.id DESC
-        """
-    ).fetchall()
-    recuperaciones = db.execute(
-        """
-        SELECT r.*, u.nombre, u.usuario, u.dni, u.telefono, u.dni_foto
-        FROM recuperaciones r
-        JOIN usuarios u ON u.id = r.usuario_id
-        ORDER BY r.id DESC
-        """
-    ).fetchall()
+    gestion = request.args.get("vista") == "cuentas"
+    q = request.args.get("q", "").strip()[:150]
+    estados = ("Pendiente","Verificado","Suspendido","Rechazado") if gestion else ("Pendiente","Aprobada","Usada","Rechazada")
     areas = db.execute("SELECT * FROM areas ORDER BY nombre").fetchall()
-    return render_template("cuentas.html", personas=personas, recuperaciones=recuperaciones, areas=areas)
+    sql = ("SELECT u.*, a.nombre AS area_nombre FROM usuarios u LEFT JOIN areas a ON a.id=u.area_id"
+           if gestion else "SELECT r.*,u.nombre,u.usuario,u.dni,u.telefono FROM recuperaciones r JOIN usuarios u ON u.id=r.usuario_id")
+    condiciones, params = [], []
+    if q:
+        campos = ["u.nombre","u.usuario","u.dni"] + (["a.nombre"] if gestion else ["r.codigo","r.correo_recuperacion"])
+        condiciones.append("(" + " OR ".join("LOWER("+campo+") LIKE LOWER(?) ESCAPE '!'" for campo in campos) + ")")
+        patron = "%" + q.replace("!","!!").replace("%","!%").replace("_","!_") + "%"
+        params.extend([patron]*len(campos))
+    if request.args.get("estado") in estados:
+        condiciones.append(("u" if gestion else "r")+".estado=?"); params.append(request.args["estado"])
+    if gestion and request.args.get("rol") in ("ciudadano","operador","administrador"):
+        condiciones.append("u.rol=?"); params.append(request.args["rol"])
+    if gestion and request.args.get("area_id",type=int):
+        condiciones.append("u.area_id=?"); params.append(request.args.get("area_id",type=int))
+    if condiciones: sql += " WHERE " + " AND ".join(condiciones)
+    sql += " ORDER BY u.nombre,u.id" if gestion else " ORDER BY CASE WHEN r.estado='Pendiente' THEN 0 ELSE 1 END,r.id DESC"
+    filas = db.execute(sql, params).fetchall()
+    return render_template("cuentas.html", gestion=gestion, estados=estados, areas=areas,
+                           personas=filas if gestion else [], recuperaciones=[] if gestion else filas)
 
 
 @app.route("/admin/usuario/<int:uid>", methods=["GET", "POST"])
@@ -1302,6 +1328,30 @@ def cuenta_detalle(uid: int):
         accion = request.form.get("accion")
         motivo = (request.form.get("motivo") or "").strip()
         ahora = datetime.now().isoformat(timespec="seconds")
+        recuperacion_correo.verificar_csrf()
+        if persona["rol"] == "operador":
+            if accion == "editar":
+                area_id = request.form.get("area_id", type=int)
+                nombre = request.form.get("nombre","").strip()
+                telefono = request.form.get("telefono","").strip()
+                clave = request.form.get("clave","")
+                if not (5 <= len(nombre) <= 120 and CEL_RE.fullmatch(telefono) and
+                        db.execute("SELECT id FROM areas WHERE id=?", (area_id,)).fetchone()
+                        and (not clave or 8 <= len(clave) <= 256)):
+                    flash("Revisa el nombre, el celular, el área y la contraseña opcional (mínimo 8 caracteres).","error")
+                    return redirect(url_for("cuenta_detalle",uid=uid))
+                db.execute("UPDATE usuarios SET nombre=?, telefono=?, area_id=?, clave_hash=? WHERE id=? AND rol='operador'",
+                           (nombre,telefono,area_id,generate_password_hash(clave) if clave else persona["clave_hash"],uid))
+                if getattr(db, "postgres", False):
+                    db.execute("UPDATE public.usuario SET id_entidad=(SELECT id_entidad FROM public.area_entidad WHERE id_area=?) WHERE id_usuario=?", (area_id, uid))
+            elif accion in ("suspender","reactivar"):
+                db.execute("UPDATE usuarios SET estado=? WHERE id=? AND rol='operador'",
+                           ("Suspendido" if accion=="suspender" else "Verificado",uid))
+            else: abort(400)
+            db.commit()
+            flash("Cuenta de entidad actualizada.","ok")
+            return redirect(url_for("cuenta_detalle",uid=uid))
+        if persona["rol"] != "ciudadano": abort(403)
         if accion == "verificar":
             db.execute(
                 "UPDATE usuarios SET estado = 'Verificado', verificado_en = ?, motivo = NULL WHERE id = ?",
@@ -1322,8 +1372,8 @@ def cuenta_detalle(uid: int):
             flash("Cuenta suspendida.", "ok")
         db.commit()
         return redirect(url_for("cuenta_detalle", uid=uid))
-    reportes = listar_reportes(usuario_id=persona["id"]) if persona["rol"] == "ciudadano" else []
-    return render_template("cuenta_detalle.html", persona=persona, reportes=reportes)
+    areas = db.execute("SELECT * FROM areas ORDER BY nombre").fetchall() if persona["rol"]=="operador" else []
+    return render_template("cuenta_detalle.html", persona=persona, areas=areas)
 
 
 @app.route("/admin/dni/<nombre>")
@@ -1350,6 +1400,8 @@ def resolver_recuperacion(rid: int):
     if not fila:
         flash("Solicitud no encontrada.", "error")
         return redirect(url_for("cuentas"))
+    if fila["correo_recuperacion"]:
+        return recuperacion_correo.resolver(fila)
     accion = request.form.get("accion")
     ahora = datetime.now().isoformat(timespec="seconds")
     if accion == "aprobar":
@@ -1368,6 +1420,10 @@ def resolver_recuperacion(rid: int):
         db.commit()
         flash("Solicitud rechazada.", "ok")
     return redirect(url_for("cuentas"))
+
+
+import recuperacion_correo
+recuperacion_correo.instalar(app, get_db, siguiente_codigo, crear_alertas, login_required, BASE_DIR)
 
 
 if __name__ == "__main__":

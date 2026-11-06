@@ -2,7 +2,7 @@
 {% block title %}Registrar incidencia · PUNO REPORTA{% endblock %}
 {% block content %}
 <section class="page-head">
-  <p class="kicker">Caso de uso · Registrar incidencia</p>
+  <p class="kicker">Nuevo reporte</p>
   <h1>Marca el punto exacto de la incidencia</h1>
   <p>Sube una foto y la IA sugerirá el tipo de problema. Puedes corregir la categoría; después marca la ubicación y describe lo que ves.</p>
 </section>
@@ -29,6 +29,8 @@
       <small class="contador"><span id="desc-count">0</span>/500</small>
     </label>
 
+    <p class="hint">La primera vez, la sugerencia automática descarga un modelo de unos 154 MB más componentes adicionales. Si usas datos móviles, puedes elegir la categoría manualmente.</p>
+    <label><input type="checkbox" id="usar-ia" checked> Sugerir categoría al subir la foto</label>
     <div class="dropzone" id="dropzone">
       <input type="file" name="foto" id="foto" accept="image/png,image/jpeg,image/webp" required>
       <div class="dropzone-copy">
@@ -62,6 +64,10 @@
         <input type="text" name="referencia" id="referencia" maxlength="160" placeholder="Frente al poste 12, al lado de la tienda, esquina con Jr. Lima…" value="{{ request.form.referencia or '' }}">
       </label>
     </div>
+    <label>Fotos de los puntos de referencia (opcional)
+      <input type="file" name="fotos_referencia" accept="image/png,image/jpeg,image/webp" multiple>
+    </label>
+    <p class="hint">Puedes seleccionar varias fotos de calles, esquinas o lugares cercanos. Máximo 12 MB en total, incluida la foto de la incidencia.</p>
     <input type="hidden" name="lat" id="lat" value="{{ request.form.lat or '' }}">
     <input type="hidden" name="lng" id="lng" value="{{ request.form.lng or '' }}">
     <input type="hidden" name="direccion_mapa" id="direccion_mapa" value="{{ request.form.direccion_mapa or '' }}">

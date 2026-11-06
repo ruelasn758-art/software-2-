@@ -47,7 +47,7 @@
       <img class="brand-logo" src="{{ url_for('static', filename='img/logo-192.png') }}" alt="Logo PUNO REPORTA">
       <span>
         <strong>PUNO REPORTA</strong>
-        <small>Municipalidad Provincial de Puno</small>
+        <small>Proyecto académico · Puno</small>
       </span>
     </a>
     <nav>
@@ -55,18 +55,19 @@
       <a href="{{ url_for('index') }}">Inicio</a>
       <a href="#como-funciona">¿Cómo funciona?</a>
       <a href="#tipos-incidencias">Tipos de incidencias</a>
-      {% else %}
+      {% elif not es_admin %}
       <a href="{{ url_for('index') }}">Mapa</a>
       {% endif %}
       {% if usuario %}
-        {% if es_admin or es_operador %}
+        {% if es_operador %}
           <a href="{{ url_for('alertas') }}">Alertas{% if n_alertas %} <em class="badge">{{ n_alertas }}</em>{% endif %}</a>
           <a href="{{ url_for('panel') }}">Asignaciones</a>
         {% endif %}
         {% if es_admin %}
-          <a href="{{ url_for('cuentas') }}">Cuentas{% if n_pendientes %} <em class="badge">{{ n_pendientes }}</em>{% endif %}</a>
+          <a href="{{ url_for('cuentas') }}">Recuperación{% if n_pendientes %} <em class="badge">{{ n_pendientes }}</em>{% endif %}</a>
+          <a href="{{ url_for('cuentas',vista='cuentas') }}">Gestionar cuentas</a>
         {% endif %}
-        <a href="{{ url_for('perfil') }}">{{ usuario.nombre.split(' ')[0] }}</a>
+        <a href="{{ url_for('perfil') }}">{{ usuario.nombre }}{% if es_operador and usuario.area_nombre and usuario.area_nombre != usuario.nombre %}<small>{{ usuario.area_nombre }}</small>{% endif %}</a>
         <a href="{{ url_for('salir') }}">Salir</a>
       {% else %}
         <a href="{{ url_for('consultar') }}" {% if request.endpoint == 'consultar' %}class="activo"{% endif %}>Consultar</a>
@@ -106,7 +107,7 @@
   <script>
     window.PUNO = { lat: {{ puno_lat }}, lng: {{ puno_lng }} };
   </script>
-  <script src="{{ url_for('static', filename='js/app.js', v='20261027-gps2') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js', v='20261106-datos') }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
