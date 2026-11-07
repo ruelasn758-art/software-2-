@@ -1,6 +1,10 @@
+
 {% extends "base.html" %}
 {% block title %}Atender {{ reporte.codigo }} · PUNO REPORTA{% endblock %}
+
 {% block content %}
+{% set foto_principal = url_for('static', filename='uploads/fotos/' + reporte.foto) %}
+
 <section class="page-head">
   <p class="kicker">{{ reporte.codigo }} · {{ reporte.area_nombre }}</p>
   <h1>Atender incidencia</h1>
@@ -9,21 +13,37 @@
 
 <div class="split">
   <article class="card">
-    <img class="foto" src="{{ url_for('static', filename='uploads/fotos/' + reporte.foto) }}" alt="Foto">
+    <img class="foto" src="{{ foto_principal }}" alt="Foto">
     <p>{{ reporte.descripcion }}</p>
-    {% if reporte.referencia %}<p><strong>Referencia:</strong> {{ reporte.referencia }}</p>{% endif %}
-    {% if reporte.direccion_mapa %}<p class="hint">{{ reporte.direccion_mapa }}</p>{% endif %}
-    <p class="hint">GPS {{ "%.5f"|format(reporte.lat) }}, {{ "%.5f"|format(reporte.lng) }}</p>
-    {% if fotos_referencia %}
-    <h3>Fotos de referencia</h3>
-    <div class="evidencias">
-      {% for foto in fotos_referencia %}
-      <figure><a href="{{ url_for('static', filename='uploads/fotos/' + foto.fotografia) }}" target="_blank" rel="noopener"><img src="{{ url_for('static', filename='uploads/fotos/' + foto.fotografia) }}" alt="Punto de referencia {{ loop.index }}" loading="lazy"></a></figure>
-      {% endfor %}
-    </div>
+
+    {% if reporte.referencia %}
+      <p><strong>Referencia:</strong> {{ reporte.referencia }}</p>
     {% endif %}
+    {% if reporte.direccion_mapa %}
+      <p class="hint">{{ reporte.direccion_mapa }}</p>
+    {% endif %}
+
+    <p class="hint">GPS {{ "%.5f"|format(reporte.lat) }}, {{ "%.5f"|format(reporte.lng) }}</p>
+
+    {% if fotos_referencia %}
+      <h3>Fotos de referencia</h3>
+      <div class="evidencias">
+        {% for foto in fotos_referencia %}
+          {% set foto_url = url_for('static', filename='uploads/fotos/' + foto.fotografia) %}
+          <figure>
+            <a href="{{ foto_url }}" target="_blank" rel="noopener">
+              <img src="{{ foto_url }}" alt="Punto de referencia {{ loop.index }}" loading="lazy">
+            </a>
+          </figure>
+        {% endfor %}
+      </div>
+    {% endif %}
+
     <div id="mapa-atender" class="mapa"></div>
-    <a class="btn btn-ghost full" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat={{ reporte.lat }}&mlon={{ reporte.lng }}#map=18/{{ reporte.lat }}/{{ reporte.lng }}">Abrir ruta en OpenStreetMap</a>
+    <a class="btn btn-ghost full" target="_blank" rel="noopener"
+       href="https://www.openstreetmap.org/?mlat={{ reporte.lat }}&mlon={{ reporte.lng }}#map=18/{{ reporte.lat }}/{{ reporte.lng }}">
+      Abrir ruta en OpenStreetMap
+    </a>
   </article>
 
   <aside>
@@ -31,6 +51,7 @@
       <input type="hidden" name="accion" value="verificar">
       <h2>Verificar en sitio</h2>
       <p class="hint">Confirma que fuiste al punto del mapa y que la incidencia existe.</p>
+
       {% if reporte.verificado_sitio %}
         <p><span class="pill verificado">Ya verificado en campo</span></p>
       {% else %}
@@ -65,12 +86,16 @@
       <h2>Historial</h2>
       <ol class="timeline">
         {% for n in notificaciones %}
-          <li><span>{{ n.codigo }}</span><p>{{ n.mensaje }}</p></li>
+          <li>
+            <span>{{ n.codigo }}</span>
+            <p>{{ n.mensaje }}</p>
+          </li>
         {% endfor %}
       </ol>
+
       {% for e in evidencias %}
         <figure class="mini">
-          <img src="{{ url_for('static', filename='uploads/evidencias/' + e.fotografia) }}" alt="">
+          <img src="{{ url_for('static', filename='uploads/evidencias/' + e.fotografia) }}" alt="" loading="lazy">
           <figcaption>{{ e.codigo }} · {{ e.fecha }}</figcaption>
         </figure>
       {% endfor %}
@@ -78,6 +103,9 @@
   </aside>
 </div>
 {% endblock %}
+
 {% block scripts %}
-<script>PunoReporta.mapaPunto({{ reporte.lat }}, {{ reporte.lng }}, "mapa-atender");</script>
+<script>
+  PunoReporta.mapaPunto({{ reporte.lat }}, {{ reporte.lng }}, "mapa-atender");
+</script>
 {% endblock %}
