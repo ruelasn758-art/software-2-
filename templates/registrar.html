@@ -1,5 +1,9 @@
+
 {% extends "base.html" %}
 {% block title %}Registrar incidencia · PUNO REPORTA{% endblock %}
+
+{% set categoria_actual = request.form.categoria_id or '' %}
+
 {% block content %}
 <section class="page-head">
   <p class="kicker">Nuevo reporte</p>
@@ -11,17 +15,22 @@
   <div class="card">
     <p class="hint">Se enviará como {{ usuario.nombre }} · {{ usuario.telefono }}</p>
     <p class="label">¿Qué vas a reportar?</p>
+
     <div class="cat-grid" id="cat-grid">
       {% for c in categorias %}
-        <button type="button" class="cat-pick {% if request.form.categoria_id == c.id|string %}activo{% endif %}"
-                data-id="{{ c.id }}" data-area="{{ c.area_nombre }}" data-categoria="{{ c.nombre }}">
+        <button type="button"
+                class="cat-pick {% if categoria_actual == c.id|string %}activo{% endif %}"
+                data-id="{{ c.id }}"
+                data-area="{{ c.area_nombre }}"
+                data-categoria="{{ c.nombre }}">
           <span class="cat-ico cat-{{ c.nombre|lower }}"></span>
           <strong>{{ c.nombre }}</strong>
           <small>{{ c.area_nombre }}</small>
         </button>
       {% endfor %}
     </div>
-    <input type="hidden" name="categoria_id" id="categoria_id" value="{{ request.form.categoria_id or '' }}" required>
+
+    <input type="hidden" name="categoria_id" id="categoria_id" value="{{ categoria_actual }}" required>
     <p class="hint" id="area-hint">El área responsable aparece al elegir categoría.</p>
 
     <label>Describe lo que ves
@@ -31,6 +40,7 @@
 
     <p class="hint">La primera vez, la sugerencia automática descarga un modelo de unos 154 MB más componentes adicionales. Si usas datos móviles, puedes elegir la categoría manualmente.</p>
     <label><input type="checkbox" id="usar-ia" checked> Sugerir categoría al subir la foto</label>
+
     <div class="dropzone" id="dropzone">
       <input type="file" name="foto" id="foto" accept="image/png,image/jpeg,image/webp" required>
       <div class="dropzone-copy">
@@ -39,6 +49,7 @@
       </div>
       <img id="foto-preview" alt="Vista previa" hidden>
     </div>
+
     <p id="foto-analisis" class="hint" role="status" aria-live="polite">Al subir una foto, se sugerirá el tipo de incidencia. Puedes cambiar la categoría si no es correcta.</p>
     <button type="button" id="cambiar-categoria" class="btn btn-ghost" hidden>Cambiar categoría</button>
     <button type="button" id="reintentar-analisis" class="btn btn-ghost" hidden>Volver a analizar foto</button>
@@ -47,16 +58,21 @@
   <div class="card map-card">
     <h2>Ubicación exacta</h2>
     <p class="hint">Haz clic en el mapa, arrastra el pin o busca un lugar conocido.</p>
+
     <div class="search-box">
       <input type="search" id="buscar-lugar" placeholder="Busca: mercado, plaza, jr. lima, puerto…" autocomplete="off">
       <ul id="sugerencias" class="sugerencias" hidden></ul>
     </div>
+
     <div class="chips" id="lugares-puno"></div>
+
     <div class="map-tools">
       <button type="button" class="btn btn-ghost" id="btn-gps">Usar mi GPS</button>
       <span id="coords-label" class="pin-status">Todavía no hay pin</span>
     </div>
+
     <div id="mapa-registro" class="mapa mapa-alto"></div>
+
     <div class="ficha-punto" id="ficha-punto">
       <p><strong>Dirección aproximada</strong></p>
       <p id="dir-label">Marca un punto para leer la calle.</p>
@@ -64,18 +80,25 @@
         <input type="text" name="referencia" id="referencia" maxlength="160" placeholder="Frente al poste 12, al lado de la tienda, esquina con Jr. Lima…" value="{{ request.form.referencia or '' }}">
       </label>
     </div>
+
     <label>Fotos de los puntos de referencia (opcional)
       <input type="file" name="fotos_referencia" accept="image/png,image/jpeg,image/webp" multiple>
     </label>
+
     <p class="hint">Puedes seleccionar varias fotos de calles, esquinas o lugares cercanos. Máximo 12 MB en total, incluida la foto de la incidencia.</p>
+
     <input type="hidden" name="lat" id="lat" value="{{ request.form.lat or '' }}">
     <input type="hidden" name="lng" id="lng" value="{{ request.form.lng or '' }}">
     <input type="hidden" name="direccion_mapa" id="direccion_mapa" value="{{ request.form.direccion_mapa or '' }}">
+
     <button class="btn btn-gold full" type="submit">Registrar y asignar área</button>
   </div>
 </form>
 {% endblock %}
+
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/foto-clasificador.js', v='20261027') }}"></script>
-<script>PunoReporta.iniciarReporte();</script>
+<script>
+  PunoReporta.iniciarReporte();
+</script>
 {% endblock %}
