@@ -1,6 +1,10 @@
+
 {% extends "base.html" %}
 {% block title %}{{ reporte.codigo }} · PUNO REPORTA{% endblock %}
+
 {% block content %}
+{% set foto_principal = url_for('static', filename='uploads/fotos/' + reporte.foto) %}
+
 <section class="page-head">
   <p class="kicker">{{ reporte.codigo }}</p>
   <h1>{{ reporte.categoria_nombre }} · {{ reporte.estado }}</h1>
@@ -9,25 +13,37 @@
 
 <div class="split">
   <article class="card">
-    <img class="foto" src="{{ url_for('static', filename='uploads/fotos/' + reporte.foto) }}" alt="Foto del reporte">
+    <img class="foto" src="{{ foto_principal }}" alt="Foto del reporte">
     <p class="descripcion">{{ reporte.descripcion }}</p>
+
     <ul class="meta">
       <li><strong>Estado:</strong> {{ reporte.estado }}</li>
       <li><strong>Categoría:</strong> {{ reporte.categoria_nombre }} ({{ reporte.tipo }})</li>
       <li><strong>Área:</strong> {{ reporte.area_nombre }}</li>
       <li><strong>GPS:</strong> {{ "%.5f"|format(reporte.lat) }}, {{ "%.5f"|format(reporte.lng) }}</li>
-      {% if reporte.direccion_mapa %}<li><strong>Dirección:</strong> {{ reporte.direccion_mapa }}</li>{% endif %}
-      {% if reporte.referencia %}<li><strong>Referencia:</strong> {{ reporte.referencia }}</li>{% endif %}
+      {% if reporte.direccion_mapa %}
+        <li><strong>Dirección:</strong> {{ reporte.direccion_mapa }}</li>
+      {% endif %}
+      {% if reporte.referencia %}
+        <li><strong>Referencia:</strong> {{ reporte.referencia }}</li>
+      {% endif %}
       <li><strong>Ciudadano:</strong> {{ reporte.ciudadano_nombre }}</li>
     </ul>
+
     {% if fotos_referencia %}
-    <h3>Fotos de referencia</h3>
-    <div class="evidencias">
-      {% for foto in fotos_referencia %}
-      <figure><a href="{{ url_for('static', filename='uploads/fotos/' + foto.fotografia) }}" target="_blank" rel="noopener"><img src="{{ url_for('static', filename='uploads/fotos/' + foto.fotografia) }}" alt="Punto de referencia {{ loop.index }}" loading="lazy"></a></figure>
-      {% endfor %}
-    </div>
+      <h3>Fotos de referencia</h3>
+      <div class="evidencias">
+        {% for foto in fotos_referencia %}
+          {% set foto_url = url_for('static', filename='uploads/fotos/' + foto.fotografia) %}
+          <figure>
+            <a href="{{ foto_url }}" target="_blank" rel="noopener">
+              <img src="{{ foto_url }}" alt="Punto de referencia {{ loop.index }}" loading="lazy">
+            </a>
+          </figure>
+        {% endfor %}
+      </div>
     {% endif %}
+
     <div id="mapa-detalle" class="mapa"></div>
   </article>
 
@@ -47,13 +63,15 @@
         <p>Aún no hay notificaciones.</p>
       {% endif %}
     </div>
+
     <div class="card">
       <h2>Evidencias de atención</h2>
       {% if evidencias %}
         <div class="evidencias">
           {% for e in evidencias %}
+            {% set evidencia_url = url_for('static', filename='uploads/evidencias/' + e.fotografia) %}
             <figure>
-              <img src="{{ url_for('static', filename='uploads/evidencias/' + e.fotografia) }}" alt="Evidencia {{ e.codigo }}">
+              <img src="{{ evidencia_url }}" alt="Evidencia {{ e.codigo }}" loading="lazy">
               <figcaption>{{ e.codigo }} · {{ e.fecha }}</figcaption>
             </figure>
           {% endfor %}
@@ -62,12 +80,16 @@
         <p>Todavía no hay evidencia de atención.</p>
       {% endif %}
     </div>
+
     {% if puede_gestionar %}
       <a class="btn btn-gold full" href="{{ url_for('atender', codigo=reporte.codigo) }}">Atender este reporte</a>
     {% endif %}
   </aside>
 </div>
 {% endblock %}
+
 {% block scripts %}
-<script>PunoReporta.mapaPunto({{ reporte.lat }}, {{ reporte.lng }}, "mapa-detalle");</script>
+<script>
+  PunoReporta.mapaPunto({{ reporte.lat }}, {{ reporte.lng }}, "mapa-detalle");
+</script>
 {% endblock %}
