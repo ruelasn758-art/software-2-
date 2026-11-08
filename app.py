@@ -654,6 +654,15 @@ def inject_globals():
     }
 
 
+@app.errorhandler(403)
+@app.errorhandler(404)
+def pagina_error(error):
+    # La API y los archivos conservan su respuesta original; no son paginas.
+    if request.path.startswith(("/api/", "/static/")):
+        return error
+    return render_template("error.html", codigo=error.code), error.code
+
+
 @app.route("/inicio")
 @app.route("/inicio-rol")
 def inicio_segun_rol():

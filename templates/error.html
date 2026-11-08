@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% set titulo = "Acceso no permitido" if codigo == 403 else "Página no encontrada" %}
+{% block title %}{{ titulo }} · PUNO REPORTA{% endblock %}
+{% block content %}
+<div class="auth">
+  <section class="page-head">
+    <p class="kicker">Error {{ codigo }}</p>
+    <h1>{{ titulo }}</h1>
+    {% if codigo == 403 %}
+      <p>No tienes permiso para realizar esta acción.</p>
+    {% else %}
+      <p>El enlace que abriste no existe o ya no está disponible.</p>
+    {% endif %}
+  </section>
+  <a class="btn btn-gold full" href="{{ url_for('inicio_segun_rol') }}">Volver al inicio</a>
+</div>
+{% endblock %}
