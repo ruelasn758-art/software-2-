@@ -32,6 +32,11 @@ En el entorno virtual: **python -m pip install -r requirements-dev.txt**.
 - Para probar PostgreSQL/PostGIS, configura **PUNO_TEST_PG_CONFIG** con la ruta a un JSON local de conexión de un servidor de pruebas (host, port, dbname, user, password) con permisos de crear bases e instalar PostGIS. En PowerShell: **$env:PUNO_TEST_PG_CONFIG = 'C:\ruta\pruebas.json'** y **python -m pytest -q -m postgres**. Se crea una base con nombre aleatorio, se aplican los scripts SQL, se comprueba el flujo por HTTP, el historial y las evidencias, y se elimina al terminar. No se clona la base de ciudadanos.
 - Las pruebas opcionales de navegador usan Node, **npm install --no-save playwright** y **npx playwright install chromium**. No son necesarias para pytest.
 
+- **python -m pytest -q tests/test_http_real.py**: levanta Flask en un puerto temporal y realiza solicitudes HTTP con cookies, formularios y archivos. Recorre registro, revisión administrativa, login, reporte, atención y consulta. También comprueba las filas de la base. No inyecta sesiones para entrar en los roles.
+- **node --test tests/clasificador.test.cjs**: cinco casos del controlador de IA: sugerencia editable, prioridad de elección manual, foto reemplazada, abstención y recuperación de un error. Usa respuestas simuladas del Worker; no mide la precisión de CLIP. Si Node está instalado, pytest ejecuta estos casos mediante **tests/test_innovacion.py**; si no, indica esa comprobación como omitida.
+
+Para la revisión manual: [evidencia de integración e innovación](EVIDENCIA_PRACTICA9.md).
+
 La [hoja de aceptación](ACTA_ACEPTACION.md) se completa con la otra mesa durante la prueba. Un resultado automático no sustituye su conformidad.
 
 ## Archivos privados

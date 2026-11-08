@@ -40,8 +40,12 @@ def cliente(request,tmp_path,monkeypatch):
         ruta=request.getfixturevalue("pg_desde_cero")
         monkeypatch.setenv("PUNO_PG_CONFIG",str(ruta))
     monkeypatch.setattr(sistema,"DB_PATH",tmp_path/"prueba.db")
-    for attr in ("UPLOAD_DNI","UPLOAD_EVIDENCIAS","UPLOAD_FOTOS"):
-        monkeypatch.setattr(sistema,attr,tmp_path/attr)
+    # La carpeta estática y los archivos subidos deben pertenecer al mismo entorno
+    # para comprobar también la descarga real de adjuntos autorizados.
+    monkeypatch.setattr(sistema.app,"static_folder",str(tmp_path/"static"))
+    monkeypatch.setattr(sistema,"UPLOAD_DNI",tmp_path/"private"/"dni")
+    monkeypatch.setattr(sistema,"UPLOAD_EVIDENCIAS",tmp_path/"static"/"uploads"/"evidencias")
+    monkeypatch.setattr(sistema,"UPLOAD_FOTOS",tmp_path/"static"/"uploads"/"fotos")
     monkeypatch.setattr(sistema,"_db_ready",False)
     monkeypatch.setitem(sistema.app.config,"TESTING",True)
     monkeypatch.setitem(sistema.app.config,"PUBLIC_TUNNEL",False)
