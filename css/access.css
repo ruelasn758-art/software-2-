@@ -1,0 +1,76 @@
+/* Únicamente el acceso previo, login y registro. */
+.access-dialog {
+  width: min(540px, calc(100% - var(--spacing-6)));
+  max-height: calc(100dvh - var(--spacing-6));
+  padding: var(--spacing-6) var(--spacing-5) var(--spacing-5);
+  text-align: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-surface);
+  color: var(--color-primary-dark);
+}
+
+.access-dialog::backdrop { background: rgb(7 38 84 / 48%); }
+.access-dialog .access-logo { width: var(--spacing-12); margin-bottom: var(--spacing-3); }
+.access-dialog h2, .auth-card h1 { font-size: 1.625rem; line-height: 1.25; letter-spacing: -0.035em; }
+.access-dialog p { margin-top: var(--spacing-2); color: var(--color-text-secondary); line-height: 1.6; }
+.access-close {
+  position: absolute;
+  top: var(--spacing-1);
+  right: var(--spacing-1);
+  display: grid;
+  place-items: center;
+  width: var(--spacing-6);
+  height: var(--spacing-6);
+  border: 0;
+  border-radius: var(--spacing-1);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 1.75rem;
+  font-weight: 400;
+  text-decoration: none;
+  cursor: pointer;
+}
+.access-close:hover { background: var(--color-soft-blue); }
+.access-actions { display: grid; gap: var(--spacing-2); margin-top: var(--spacing-4); }
+.access-actions .button, .direct-login { text-decoration: none; }
+.access-actions .button-primary, .auth-card .button-primary { background: var(--color-secondary); color: var(--color-surface); }
+body:has(.access-dialog[open]) { overflow: hidden; }
+
+.auth-page { display: grid; place-items: center; min-height: 100svh; padding: var(--spacing-3); }
+.auth-card {
+  position: relative;
+  width: min(100%, 480px);
+  padding: var(--spacing-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-surface);
+}
+.auth-logo { width: var(--spacing-12); margin: 0 auto var(--spacing-3); }
+.auth-card h1 { text-align: center; margin-bottom: var(--spacing-4); }
+.auth-fields { display: grid; gap: var(--spacing-3); min-width: 0; border: 0; padding: 0; margin: 0; }
+.auth-field { display: grid; gap: var(--spacing-1); min-width: 0; }
+.auth-field label { color: var(--color-primary-dark); font-weight: 600; font-size: 0.875rem; }
+.auth-field input { width: 100%; min-height: 48px; padding: var(--spacing-1) var(--spacing-2); border: 1px solid var(--color-border); border-radius: var(--spacing-1); font: inherit; color: var(--color-text); background: var(--color-surface); }
+.auth-fields .button { width: 100%; cursor: pointer; }
+.auth-fields .button:disabled { cursor: wait; opacity: 0.7; }
+.auth-switch { text-align: center; margin-top: var(--spacing-3); font-size: 0.875rem; color: var(--color-text-secondary); }
+.auth-switch a { color: var(--color-secondary); font-weight: 600; text-underline-offset: 3px; }
+.auth-status { margin-top: var(--spacing-2); color: var(--color-text-secondary); font-size: 0.875rem; }
+.auth-status:empty { display: none; }
+
+@media (max-width: 599px) {
+  .header-login { display: none; }
+  .access-dialog {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - var(--spacing-2));
+    margin: auto 0 0;
+    padding: var(--spacing-6) var(--spacing-3) max(var(--spacing-4), env(safe-area-inset-bottom));
+    border-radius: var(--spacing-3) var(--spacing-3) 0 0;
+  }
+  .access-dialog::before { content: ""; position: absolute; top: var(--spacing-1); left: calc(50% - 24px); width: var(--spacing-6); height: 4px; border-radius: 4px; background: var(--color-border); }
+  .access-dialog .access-logo { width: var(--spacing-10); }
+  .auth-page { padding: var(--spacing-2); }
+  .auth-card { padding: var(--spacing-6) var(--spacing-3) var(--spacing-4); }
+}

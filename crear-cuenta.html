@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es-PE">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crear cuenta</title>
+  <link rel="icon" type="image/png" href="assets/logo-symbol.png">
+  <link rel="stylesheet" href="css/variables.css"><link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/auth-pages.css">
+  <script src="js/auth-service.js" defer></script><script src="js/auth.js" defer></script><script src="js/password-toggle.js" defer></script>
+<link rel="stylesheet" href="css/brand.css">
+<script src="js/brand.js" defer></script>
+</head>
+<body class="auth-redesign">
+  <a class="skip-link" href="#auth-title">Ir al formulario</a>
+  <main class="auth-shell">
+    <aside class="auth-story" aria-labelledby="story-title">
+      <img class="auth-landscape" src="assets/images/home/puno.jpg" alt="Vista de Puno junto al lago Titicaca" width="1920" height="511" fetchpriority="high">
+      <a class="auth-brand" href="index.html" aria-label="Volver al inicio"><img data-brand-logo src="assets/logo-symbol.png" alt="Símbolo de la plataforma" width="64" height="64"><span data-brand-name hidden></span></a>
+      <div class="auth-story-copy">
+        <p class="auth-eyebrow">PARTICIPA. REPORTA. TRANSFORMA.</p>
+        <h2 id="story-title">Tu voz construye<br><span>un Puno mejor.</span></h2>
+        <p class="auth-story-description">Reporta problemas en tu ciudad y contribuye a construir espacios más limpios, seguros y ordenados.</p>
+        <ul class="auth-benefits">
+          <li><span class="auth-benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h4l2-3h6l2 3h4v15H3ZM16 13a4 4 0 1 1-8 0 4 4 0 0 1 8 0"/></svg></span><div><h3>Reporta incidencias</h3><p>Con fotografías y ubicación GPS.</p></div></li>
+          <li><span class="auth-benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 10a6 6 0 1 1-12 0 6 6 0 0 1 12 0Zm-2 4 7 7"/></svg></span><div><h3>Consulta tus reportes</h3><p>Revisa su estado desde tu cuenta.</p></div></li>
+          <li><span class="auth-benefit-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a6 6 0 0 0-6-6h-4a6 6 0 0 0-6 6v2M16 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0"/></svg></span><div><h3>Contribuye al cambio</h3><p>Tu participación ayuda a mejorar la ciudad.</p></div></li>
+        </ul>
+      </div>
+      <p class="auth-photo-credit"><a href="https://commons.wikimedia.org/wiki/File:Ciudad_de_Puno.jpg">Puno · Antonio Gargate</a> / <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a> · Recorte visual</p>
+    </aside>
+    <section class="auth-form-panel" aria-labelledby="auth-title">
+      <a class="auth-back" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>Volver al inicio</a>
+      <div class="auth-form-content">
+        <div class="auth-form-brand"><a class="auth-brand" href="index.html" aria-label="Volver al inicio"><img data-brand-logo src="assets/logo-symbol.png" alt="Símbolo de la plataforma" width="64" height="64"><span data-brand-name hidden></span></a></div>
+        <header class="auth-form-heading"><h1 id="auth-title" tabindex="-1">Crear cuenta</h1><p>Únete a la plataforma y sé parte del cambio</p></header>
+        <form id="auth-form" data-mode="register">
+          <fieldset class="auth-fields" id="auth-fields" disabled>
+            <div class="auth-field"><label for="full-name">Nombre completo</label><div class="auth-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a6 6 0 0 0-6-6h-4a6 6 0 0 0-6 6v2M16 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0"/></svg><input id="full-name" type="text" autocomplete="name" placeholder="Tu nombre completo" required></div></div>
+            <div class="auth-field"><label for="email">Correo electrónico</label><div class="auth-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18v14H3Zm0 0 9 7 9-7"/></svg><input id="email" type="email" autocomplete="email" placeholder="tucorreo@ejemplo.com" required></div></div>
+            <div class="auth-field"><label for="password">Contraseña</label><div class="auth-input auth-password"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 10h14v11H5Zm3 0V6a4 4 0 0 1 8 0v4M12 14v3"/></svg><input id="password" type="password" autocomplete="new-password" placeholder="Crea una contraseña" required><button class="password-toggle" id="password-toggle" type="button" aria-label="Mostrar contraseña" aria-pressed="false" aria-controls="password"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Zm13 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/></svg><span class="password-slash" aria-hidden="true"></span></button></div></div>
+            <button class="auth-submit" id="auth-submit" type="submit">Crear cuenta<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+          </fieldset>
+          <p class="auth-status" id="auth-status" role="status"></p>
+        </form>
+        <p class="auth-switch">¿Ya tienes cuenta? <a id="auth-switch" href="iniciar-sesion.html">Iniciar sesión</a></p>
+      </div>
+      <p class="auth-form-footer">Una ciudad que cuidamos juntos</p>
+    </section>
+  </main>
+</body>
+</html>

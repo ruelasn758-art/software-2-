@@ -1,0 +1,29 @@
+:root {
+  --color-primary: #073774;
+  --color-primary-dark: #072654;
+  --color-secondary: #005de5;
+  --color-accent: #ffb600;
+  --color-accent-text: #996300;
+  --color-background: #f5faff;
+  --color-surface: #ffffff;
+  --color-text: #102d52;
+  --color-text-secondary: #526b8d;
+  --color-border: #d7e8f8;
+  --color-soft-blue: #e7f4ff;
+  --color-map-block: #e8edf2;
+  --color-map-park: #cde9d4;
+  --shadow-soft: 0 8px 24px rgb(7 55 116 / 6%);
+  --shadow-phone: 8px 16px 32px rgb(7 38 84 / 20%);
+  --spacing-1: 8px;
+  --spacing-2: 16px;
+  --spacing-3: 24px;
+  --spacing-4: 32px;
+  --spacing-5: 40px;
+  --spacing-6: 48px;
+  --spacing-8: 64px;
+  --spacing-10: 80px;
+  --spacing-12: 96px;
+  --border-radius: 16px;
+  --container-width: 1200px;
+  --font-family: "Segoe UI", Arial, sans-serif;
+}

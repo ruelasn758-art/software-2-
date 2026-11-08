@@ -1,0 +1,6 @@
+/* Solo identidad; mantiene las dimensiones de navegación y formularios. */
+[data-brand-name][hidden] { display:none !important; }
+img[data-brand-logo] { object-fit:contain; flex-shrink:0; }
+.home-brand,.auth-brand,.rf-brand,.entity-brand { min-height:64px; }
+.auth-brand img[data-brand-logo] { border-radius:8px; }
+.entity-brand img[data-brand-logo] { border-radius:8px; background:white; }

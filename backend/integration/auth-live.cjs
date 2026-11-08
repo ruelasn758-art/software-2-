@@ -1,0 +1,61 @@
+"use strict";
+// Escribe UN reporte nuevo identificable, con foto y solución, solo en la copia.
+const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),os=require('node:os');
+const pool=require('../config/database');
+const base='http://127.0.0.1:3001/api';
+let checks=0;
+function check(actual,expected){assert.deepEqual(actual,expected);checks++;}
+async function send(route,{cookie,body,method='GET'}={}){
+ const multipart=body instanceof FormData;
+ const response=await fetch(base+route,{method,headers:{...(cookie?{Cookie:cookie}:{}),...(!multipart&&body?{'Content-Type':'application/json'}:{})},body:body?(multipart?body:JSON.stringify(body)):undefined});
+ return {status:response.status,body:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0]};
+}
+(async()=>{
+ check((await pool.query('SELECT current_database() AS name')).rows[0].name,'puno_reporta_prueba_ia');
+ check((await send('/health')).body.database,'puno_reporta_prueba_ia');
+ const max=(await pool.query('SELECT coalesce(max(id_reporte),0) AS id FROM reporte')).rows[0].id;
+ const fingerprint=async()=> (await pool.query("SELECT md5(string_agg(to_jsonb(r)::text,'' ORDER BY id_reporte)) AS hash FROM reporte r WHERE id_reporte<=$1",[max])).rows[0].hash;
+ const before=await fingerprint();
+ const citizen=JSON.parse(await fs.readFile(path.join(os.tmpdir(),'puno-citizen-test-credentials.json'),'utf8'));
+ const entity=JSON.parse(await fs.readFile(path.join(os.tmpdir(),'puno-vias-test-credentials.json'),'utf8'));
+ const login=await send('/auth/login',{method:'POST',body:citizen});check(login.status,200);check(login.body.usuario.rol,'CIUDADANO');
+ const cookie=login.cookie;
+ check((await send('/entidad/reportes',{cookie})).status,403);
+ const categories=(await send('/categorias')).body;
+ const category=categories.find(c=>c.nombre==='Vías');assert.ok(category);
+ const types=(await send('/tipos-incidencia?categoria='+category.id_categoria)).body;
+ const type=types.find(t=>/bache/i.test(t.nombre));
+ const created=await send('/reportes',{cookie,method:'POST',body:{id_usuario:1,id_categoria:category.id_categoria,id_tipo_incidencia:type?.id_tipo_incidencia??null,descripcion:'PRUEBA AUTOMATIZADA DE ACCESO POR ROLES — bache de validación',latitud:-15.8402,longitud:-70.0219,origen_ubicacion:'MANUAL',precision_metros:null}});
+ check(created.status,201);const id=created.body.reporte.id_reporte;
+ const photo=await fs.readFile(path.join(__dirname,'../../assets/images/home/vias.jpg'));
+ const multipart=()=>{const form=new FormData();form.append('archivo',new Blob([photo],{type:'image/jpeg'}),'vias-prueba.jpg');return form;};
+ const form=multipart();form.append('tipo_archivo','INCIDENCIA');
+ const uploaded=await send(`/reportes/${id}/archivos`,{cookie,method:'POST',body:form});check(uploaded.status,201);
+ const own=(await send('/reportes',{cookie})).body;
+ check(own.every(r=>String(r.id_usuario)===String(login.body.usuario.id_usuario)),true);
+ check(own.some(r=>r.id_reporte===id),true);
+ const file=uploaded.body.archivo.ruta_archivo;
+ check((await fetch('http://127.0.0.1:3001'+file,{headers:{Cookie:cookie}})).status,200);
+ check((await fetch('http://127.0.0.1:3001'+file)).status,401);
+ check((await send('/auth/logout',{cookie,method:'POST',body:{}})).status,200);
+ check((await send('/reportes',{cookie})).status,401);
+ const access=await send('/auth/login',{method:'POST',body:{correo:entity.correo,password:entity.password}});check(access.status,200);
+ const ec=access.cookie,area=access.body.usuario.id_area_responsable;
+ const assigned=(await send('/entidad/reportes',{cookie:ec})).body;
+ check(assigned.reportes.every(r=>String(r.id_area_responsable)===String(area)),true);
+ check(assigned.reportes.some(r=>r.id_reporte===id),true);
+ const manipulated=await send('/entidad/limpieza/reportes?id_area_responsable=999',{cookie:ec});check(manipulated.body.area.id_area,area);
+ const other=(await pool.query('SELECT id_reporte FROM reporte WHERE id_area_responsable<>$1 AND activo LIMIT 1',[area])).rows[0];
+ if(other)check((await send(`/entidad/reportes/${other.id_reporte}/estado`,{cookie:ec,method:'POST',body:{estado:'En proceso'}})).status,404);
+ check((await send(`/entidad/reportes/${id}/estado`,{cookie:ec,method:'POST',body:{estado:'En proceso'}})).status,200);
+ const solution=multipart();solution.append('observacion','Evidencia de PRUEBA AUTOMATIZADA, no corresponde a una atención real.');
+ check((await send(`/entidad/reportes/${id}/solucion`,{cookie:ec,method:'POST',body:solution})).status,200);
+ await send('/auth/logout',{cookie:ec,method:'POST',body:{}});
+ const back=await send('/auth/login',{method:'POST',body:citizen});
+ const final=(await send('/reportes',{cookie:back.cookie})).body.find(r=>r.id_reporte===id);
+ check(final.estado,'Solucionado');check(final.archivos.length,2);check(final.historial.length,3);
+ check(await fingerprint(),before);
+ await send('/auth/logout',{cookie:back.cookie,method:'POST',body:{}});
+ const result={checks,report:id,code:created.body.reporte.codigo,user:login.body.usuario.id_usuario,area,previousReportsUnchanged:true,geminiCalled:false};
+ await fs.writeFile(path.join(__dirname,'../../.tmp/auth-live-result.json'),JSON.stringify(result,null,2));console.log(result);
+})().catch(error=>{console.error({message:error.message,code:error.code});process.exitCode=1;}).finally(()=>pool.end());

@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="es-PE">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Nueva incidencia</title>
+    <link rel="icon" type="image/png" href="assets/logo-symbol.png">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/incidence.css">
+    <link rel="stylesheet" href="css/citizen-dashboard.css">
+    <link rel="stylesheet" href="css/entity-dashboard.css">
+    <link rel="stylesheet" href="css/entity-roads.css">
+    <link rel="stylesheet" href="css/report-form.css">
+    <link rel="stylesheet" href="css/citizen-shell.css">
+    <link rel="stylesheet" href="css/my-reports.css">
+    <link rel="stylesheet" href="css/incidence-map.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous" defer></script>
+    <script src="js/auth-service.js" defer></script>
+    <script src="js/category-routing.js" defer></script>
+    <script src="js/incidence-data.js" defer></script>
+    <script src="js/report-location.js" defer></script>
+    <script src="js/report-detail.js" defer></script>
+    <script src="js/citizen-dashboard.js" defer></script>
+    <script src="js/report-store.js" defer></script>
+    <script src="js/entity-reports.js" defer></script>
+    <script src="js/entity-dashboard.js" defer></script>
+    <script src="js/report-assistance.js" defer></script>
+    <script src="js/my-reports.js" defer></script>
+    <script src="js/incidence-map.js" defer></script>
+    <script src="js/new-incidence.js" defer></script>
+    <script src="js/report-form-ui.js" defer></script>
+  <link rel="stylesheet" href="css/brand.css">
+<script src="js/brand.js" defer></script>
+</head>
+  <body class="incidence-screen" id="citizen-shell">
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <header class="site-header">
+      <div class="container header-content">
+        <div class="brand">
+          <img data-brand-logo class="brand-logo" src="assets/logo-symbol.png" alt="Símbolo de la plataforma" width="1254" height="1254">
+          <span class="brand-name" data-brand-name hidden></span>
+        </div>
+        <button class="dashboard-profile" type="button" disabled aria-label="Perfil, disponible más adelante" title="Perfil estará disponible más adelante"></button>
+        <span class="citizen-account-label">Ciudadano</span>
+      </div>
+    </header>
+    <aside class="rf-sidebar" aria-label="Menú de reportes"><a class="rf-brand" href="index.html"><img data-brand-logo src="assets/logo-symbol.png" width="48" height="48" alt="Símbolo de la plataforma"><span data-brand-name hidden></span></a><nav aria-label="Navegación del ciudadano"><button type="button" id="citizen-home"><svg class="rf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10 12 3l9 7v11h-6v-7H9v7H3Z"/></svg>Inicio</button><button type="button" aria-current="page" id="citizen-report"><svg class="rf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Reportar incidencia</button><button type="button" id="citizen-reports"><svg class="rf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6ZM9 11h7M9 15h7M9 7h3"/></svg>Mis reportes</button><button type="button" id="rf-map-link"><svg class="rf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2ZM9 3v16M15 5v16"/></svg>Mapa de incidencias</button><button type="button" disabled title="Perfil aún no disponible"><svg class="rf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-2a8 8 0 0 1 16 0v2"/></svg>Perfil</button></nav><div class="rf-sidebar-note"><span>Tu voz construye<br>un Puno mejor.</span><i></i></div></aside>
+    <main class="container incidence-page" id="contenido" tabindex="-1">
+      <section class="citizen-dashboard" id="citizen-dashboard" aria-labelledby="dashboard-title" hidden>
+        <div class="dashboard-welcome">
+          <div class="dashboard-welcome-copy">
+            <p class="dashboard-eyebrow">TU CIUDAD, TU PARTICIPACIÓN</p>
+            <h1 id="dashboard-title" tabindex="-1">Hola, ciudadano</h1>
+            <p>Gestiona y consulta tus reportes urbanos para contribuir a un Puno más limpio, seguro y ordenado.</p>
+            <button class="button button-primary" id="dashboard-create" type="button">Reportar incidencia <span aria-hidden="true">→</span></button>
+          </div>
+          <aside class="dashboard-welcome-note"><span aria-hidden="true">⌖</span><h2>Juntos por un<br>mejor Puno</h2><p>Tu voz ayuda a cuidar los espacios que compartimos.</p></aside>
+        </div>
+        <p class="field-help" id="dashboard-data-status" role="status"></p>
+        <section class="dashboard-summary" aria-labelledby="dashboard-summary-title">
+          <h2 class="visually-hidden" id="dashboard-summary-title">Resumen de reportes</h2>
+          <dl class="dashboard-counts">
+            <div><dt>Total de reportes</dt><dd id="dashboard-total">0</dd></div>
+            <div><dt>Reportados</dt><dd id="dashboard-reported">0</dd></div>
+            <div><dt>En proceso</dt><dd id="dashboard-progress">0</dd></div>
+            <div><dt>Solucionados</dt><dd id="dashboard-solved">0</dd></div>
+          </dl>
+        </section>
+        <div class="dashboard-columns">
+          <section class="dashboard-panel dashboard-list-panel" aria-labelledby="dashboard-recent-title">
+            <div class="dashboard-section-heading"><h2 id="dashboard-recent-title">Mis reportes recientes</h2><button class="text-button" id="dashboard-retry" type="button">Actualizar reportes</button></div>
+            <div class="dashboard-empty" id="dashboard-empty"><span class="dashboard-empty-icon" aria-hidden="true"></span><div><h3>Aún no tienes reportes</h3><p>Crea tu primera incidencia para comenzar.</p></div><button class="button button-primary" id="dashboard-empty-create" type="button">Crear reporte</button></div>
+            <ul class="dashboard-recent" id="dashboard-recent"></ul>
+            <button class="text-button dashboard-view-all" id="dashboard-view-all" type="button">Ver todos mis reportes <span aria-hidden="true">→</span></button>
+          </section>
+          <div class="dashboard-aside">
+            <section class="dashboard-panel dashboard-map-panel" aria-labelledby="dashboard-map-title">
+              <div class="dashboard-section-heading"><h2 id="dashboard-map-title">Mapa de incidencias</h2><span class="dashboard-panel-caption">Tus reportes</span></div>
+              <div id="dashboard-map" class="dashboard-map" role="region" aria-label="Mapa de ubicaciones registradas" hidden></div>
+              <p class="field-help" id="dashboard-map-status" role="status"></p>
+            </section>
+            <section class="dashboard-panel" id="dashboard-activity-panel" aria-labelledby="dashboard-activity-title" hidden>
+              <div class="dashboard-section-heading"><h2 id="dashboard-activity-title">Actividad reciente</h2></div>
+              <p class="dashboard-panel-caption">Últimos registros de incidencias</p>
+              <ol class="dashboard-activity" id="dashboard-activity"></ol>
+            </section>
+          </div>
+        </div>
+        <p class="dashboard-photo-credit"><a href="https://commons.wikimedia.org/wiki/File:Ciudad_de_Puno.jpg">Fotografía de Puno: Antonio Gargate</a> · <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a> · Recorte visual</p>
+      </section>
+<section id="incidence-map-view" class="incidence-map-view" aria-labelledby="incidence-map-title" hidden>
+<header class="map-heading"><h1 id="incidence-map-title" tabindex="-1">Mapa de incidencias</h1><p>Consulta la ubicación y el estado de tus reportes registrados.</p></header>
+<dl class="map-counts"><div><span aria-hidden="true">▤</span><dt>Total de reportes</dt><dd id="map-count-total">—</dd></div><div><span aria-hidden="true">!</span><dt>Reportados</dt><dd id="map-count-reported">—</dd></div><div><span aria-hidden="true">◷</span><dt>En proceso</dt><dd id="map-count-progress">—</dd></div><div><span aria-hidden="true">✓</span><dt>Solucionados</dt><dd id="map-count-solved">—</dd></div></dl>
+<div class="map-toolbar"><label>Estado<select id="map-filter-state"><option value="">Todos los estados</option><option>Reportado</option><option>En proceso</option><option>Solucionado</option></select></label><label>Categoría<select id="map-filter-category"><option value="">Todas las categorías</option></select></label><label>Fecha de registro<select id="map-filter-period"><option value="all">Todas las fechas</option><option value="7">Últimos 7 días</option><option value="30">Últimos 30 días</option><option value="90">Últimos 90 días</option></select></label><button class="button button-secondary" id="map-refresh" type="button">↻ Actualizar</button><button class="button button-primary" id="map-center" type="button">Centrar mapa</button></div>
+<p id="map-data-status" class="field-help" role="status"></p><p id="map-results" class="field-help" role="status"></p>
+<div class="map-workspace"><div class="map-canvas-wrap"><div id="incidents-map" class="incidents-map" aria-label="Mapa de tus reportes" tabindex="0"></div><aside class="map-legend" aria-label="Estados de incidencias"><strong>Estados de incidencias</strong><span><i class="reported">!</i>Reportado</span><span><i class="progress">◷</i>En proceso</span><span><i class="solved">✓</i>Solucionado</span></aside><p id="map-empty" class="map-empty" hidden>No hay reportes con ubicación para estos filtros.</p></div>
+<aside id="map-report-panel" class="map-report-panel" aria-labelledby="map-panel-code" hidden><button id="map-panel-close" type="button" aria-label="Cerrar información del reporte">×</button><img id="map-panel-photo" alt="Fotografía del incidente" hidden><div id="map-photo-empty" class="map-photo-empty">Fotografía no disponible</div><span id="map-panel-state" class="map-panel-state"></span><h2 id="map-panel-code" tabindex="-1"></h2><p id="map-panel-description"></p><dl><div><dt>Categoría</dt><dd id="map-panel-category"></dd></div><div><dt>Entidad</dt><dd id="map-panel-entity"></dd></div><div><dt>Fecha</dt><dd id="map-panel-date"></dd></div><div><dt>Coordenadas</dt><dd id="map-panel-location"></dd></div></dl><button id="map-open-detail" class="button button-primary" type="button">Ver detalle</button></aside></div><p id="map-cartography-status" class="field-help" role="status"></p></section>
+      <div class="incidence-heading" id="incidence-heading"><nav class="rf-breadcrumb" aria-label="Ruta de navegación"><button type="button" data-report-nav="citizen-home">Inicio</button><span aria-hidden="true">›</span><span aria-current="page">Reportar incidencia</span></nav><h1>Reportar incidencia</h1><p class="field-help">Toma una foto, revisa la información y envía tu reporte en pocos pasos.</p></div>
+      <noscript><p>Activa JavaScript para registrar tu incidencia.</p></noscript>
+      <div hidden aria-hidden="true"><ol id="step-progress"><li id="progress-0"></li><li id="progress-1"></li><li id="progress-2"></li><li id="progress-3"></li></ol><p id="step-status"></p></div>
+      <form id="incidence-form" class="incidence-form report-single-page" autocomplete="off" novalidate>
+        <fieldset id="report-fields" class="report-fields" disabled><legend class="visually-hidden">Datos del reporte</legend>
+          <fieldset class="report-inputs" id="report-input-fields"><legend class="visually-hidden">Completa tu incidencia</legend><ol class="rf-progress" aria-label="Progreso del reporte"><li id="rf-progress-0"><span>1</span><strong>Fotografía</strong></li><li id="rf-progress-1"><span>2</span><strong>Identificación</strong></li><li id="rf-progress-2"><span>3</span><strong>Ubicación</strong></li><li id="rf-progress-3"><span>4</span><strong>Revisar y enviar</strong></li></ol>
+            <section id="step-1" class="step-panel report-photo-card" aria-labelledby="step-title-1">
+              <p class="report-section-number"><i>1</i> FOTOGRAFÍA <span>Obligatoria</span></p><h2 id="step-title-1" tabindex="-1">Sube una fotografía de la incidencia</h2><p class="field-help">La imagen debe mostrar claramente el problema.</p>
+              <div class="photo-description-grid"><div class="photo-drop-zone" id="photo-drop-zone"><span class="photo-drop-icon" aria-hidden="true"><svg class="rf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h5l2-3h4l2 3h5v14H3ZM16 14a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/></svg></span><strong>Toma o sube una fotografía</strong><p>También puedes arrastrar una imagen aquí.</p><div class="flow-actions"><button class="button button-secondary" id="take-photo" type="button"><svg class="rf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h5l2-3h4l2 3h5v14H3ZM16 14a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/></svg>Tomar foto</button><button class="button button-secondary" id="choose-photo" type="button"><svg class="rf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3h18v18H3ZM3 17l6-6 4 4 3-3 5 5M15 7h.01"/></svg>Seleccionar imagen</button></div><p class="field-help">JPG, PNG o WEBP · Máximo 8 MB</p></div>
+              <figure class="photo-preview" id="photo-preview" hidden><img id="photo-image" alt="Fotografía seleccionada"><figcaption id="photo-name"></figcaption><button class="text-button" id="remove-photo" type="button">Quitar foto</button></figure></div>
+              <input id="photo-file" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Seleccionar fotografía" hidden><input id="photo-camera" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" aria-label="Tomar fotografía" hidden>
+              <p id="photo-status" class="field-help" role="status"></p><p id="photo-required" class="field-help" role="status">Debes adjuntar una fotografía del incidente.</p>
+            </section>
+                      <section id="step-0" class="step-panel report-identification" aria-labelledby="step-title-0">
+<p class="report-section-number"><i>2</i> IDENTIFICACIÓN</p><h2 id="step-title-0" tabindex="-1">Identifica el problema</h2>
+<p class="field-help" id="ai-status" role="status">Sube una fotografía para identificar el problema.</p><button type="button" class="button button-secondary" id="retry-analysis" hidden>Analizar fotografía</button>
+<section id="ai-result" class="ai-result" aria-label="Sugerencia original de inteligencia artificial" hidden><h3>Sugerencia de IA</h3><dl><div><dt>Problema identificado</dt><dd id="ai-original-type"></dd></div><div><dt>Categoría</dt><dd id="ai-original-category"></dd></div><div><dt>Destino recomendado</dt><dd id="ai-original-area"></dd></div></dl><p><strong>Descripción sugerida</strong></p><p id="ai-original-description"></p><p class="field-help">Revisa la sugerencia. Puedes editar la descripción y elegir otra categoría o destino.</p></section>
+<button type="button" class="text-button" id="change-identification" hidden>Cambiar identificación</button>
+<div class="rf-identification" hidden><div><span>Problema identificado</span><strong id="rf-type">Por identificar</strong></div><div><span>Categoría</span><strong id="rf-category">Por identificar</strong></div></div>
+<div class="identification-fields" id="correct-information"><div class="field" hidden><label for="category">Categoría</label><select id="category" name="category" aria-label="Categoría">
+              <option value="">Seleccionar categoría</option>
+              <option value="vias">Vías</option>
+              <option value="limpieza">Limpieza</option>
+              <option value="alumbrado">Alumbrado</option>
+              <option value="agua">Agua</option>
+            </select></div><div class="category-options" role="group" aria-label="Categoría de la incidencia">
+              <button class="category-option category-road" id="choose-vias" type="button" aria-pressed="false">
+                <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 3h12l7 26H3Z" fill="currentColor"/><path d="M16 6v5m0 4v5m0 4v3" stroke="white" stroke-width="2"/></svg>
+                <strong>Vías</strong><span>Baches y problemas en vías</span>
+              </button>
+              <button class="category-option category-clean" id="choose-limpieza" type="button" aria-pressed="false">
+                <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9h20M12 9V4h8v5M9 9l1 19h12l1-19M13 14v9m6-9v9"/></svg>
+                <strong>Limpieza</strong><span>Residuos y puntos críticos</span>
+              </button>
+              <button class="category-option category-light" id="choose-alumbrado" type="button" aria-pressed="false">
+                <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 22c0-4-4-5-4-10a8 8 0 0 1 16 0c0 5-4 6-4 10ZM12 26h8m-6 3h4M16 22v-8"/></svg>
+                <strong>Alumbrado</strong><span>Luminarias dañadas</span>
+              </button>
+              <button class="category-option category-water" id="choose-agua" type="button" aria-pressed="false">
+                <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M16 2S6 14 6 20a10 10 0 0 0 20 0C26 14 16 2 16 2Z"/><path d="M11 19a6 6 0 0 0 6 6" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+                <strong>Agua</strong><span>Fugas y problemas de saneamiento</span>
+              </button>
+            </div><div class="field">
+              <label for="incidence-type">Tipo de incidencia (opcional)</label>
+              <div id="type-cards" class="choice-cards" role="group" aria-label="Tipo de incidencia"></div><select id="incidence-type" hidden disabled><option value="">Selecciona una categoría primero</option></select>
+              <p class="field-help" id="type-status" role="status"></p>
+              <button class="text-button" id="retry-types" type="button" hidden>Reintentar carga</button>
+            </div>
+          </div>
+<div class="field"><label for="description">Descripción (opcional)</label><textarea id="description" name="description" rows="4" placeholder="Cuéntanos qué problema encontraste"></textarea></div>
+<div class="report-destination-inline"><p>Este reporte será enviado a:</p><strong id="rf-destination">Se asignará al identificar el problema</strong>
+<details class="report-disclosure" id="change-destination"><summary>Cambiar destino</summary><p id="entity" class="field-help" hidden></p><div class="field"><label for="destination">Entidad y área destinataria</label><div id="destination-cards" class="choice-cards" role="group" aria-label="Destinos disponibles"></div><select id="destination" hidden required disabled><option value="">Cargando destinos…</option></select><p id="destination-description" class="field-help" hidden></p></div><button class="text-button" id="restore-destination" type="button" disabled>Volver a la recomendación</button><button class="text-button" id="retry-destinations" type="button">Actualizar destinos</button></details><p id="destination-status" class="field-help" role="status"></p></div>
+</section>
+<section id="step-2" class="step-panel" aria-labelledby="step-title-2">
+            <p class="report-section-number"><i>3</i> UBICACIÓN</p><h2 id="step-title-2" tabindex="-1">¿Dónde ocurrió?</h2>
+            <fieldset class="field location-field">
+              <legend class="visually-hidden">Ubicación</legend>
+              <p class="field-help">Usa el GPS o señala el lugar en el mapa. Confirma el punto antes de enviar.</p>
+              <div class="flow-actions">
+                <button class="button button-secondary" id="use-location" type="button"><svg class="rf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 9c0 5-7 12-7 12S5 14 5 9a7 7 0 1 1 14 0ZM14 9a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/></svg>Usar mi ubicación actual</button>
+                <button class="button button-secondary" id="use-manual-location" type="button" aria-pressed="false" aria-controls="report-map"><svg class="rf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2ZM9 3v16M15 5v16"/></svg>Elegir en el mapa</button>
+              </div>
+              <p class="field-help" id="location-status" role="status">Todavía no has seleccionado una ubicación.</p>
+              <div id="report-map" class="report-map" role="region" aria-label="Mapa de la ubicación del problema" aria-describedby="map-help" tabindex="0"></div>
+              <p id="map-help" class="field-help">En selección manual, toca el lugar del problema en el mapa. Con teclado, enfoca el mapa, desplázalo con las flechas y pulsa Enter para elegir su centro.</p>
+              <p id="map-status" class="field-help" role="status"></p>
+              <dl class="location-values" id="location-values" hidden>
+                <div><dt>Origen</dt><dd id="location-source-value"></dd></div><div><dt>Latitud</dt><dd id="latitude-value"></dd></div>
+                <div><dt>Longitud</dt><dd id="longitude-value"></dd></div>
+                <div><dt>Precisión aproximada</dt><dd id="accuracy-value"></dd></div>
+              </dl>
+              <div class="flow-actions">
+                <button class="button button-primary" id="confirm-location" type="button" disabled>Confirmar ubicación</button>
+                <button class="button button-secondary" id="change-location" type="button" hidden>Cambiar ubicación</button>
+              </div>
+              <p class="location-confirmed-note" id="location-confirmed-note" hidden>✓ Ubicación confirmada</p><p id="location-required" class="field-help" role="status">Debes confirmar la ubicación del incidente para continuar.</p>
+            </fieldset>
+          </section>
+
+          </fieldset>
+          <section id="step-3" class="step-panel report-submit-panel" aria-labelledby="step-title-3">
+            <p class="report-section-number"><i>4</i> ENVIAR</p><h2 id="step-title-3" tabindex="-1">Revisa y envía tu reporte</h2><p class="field-help">Comprueba que la información y el lugar del problema sean correctos.</p>
+            <section class="report-review" id="report-review" aria-labelledby="review-title"><h3 id="review-title" tabindex="-1">Vista previa del reporte</h3><p class="field-help" id="review-note"></p><img id="review-photo-image" class="review-photo-image" alt="Fotografía del reporte" hidden><p id="review-photo" class="field-help">Sin fotografía</p><div class="rf-photo-empty" id="rf-photo-empty"><svg class="rf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 3h18v18H3ZM3 17l6-6 4 4 3-3 5 5M15 7h.01"/></svg><span>Tu fotografía aparecerá aquí</span></div><dl class="review-values"><div><dt>Categoría</dt><dd id="review-category">Por identificar</dd></div><div><dt>Problema</dt><dd id="review-type">Por identificar</dd></div><div id="review-description-row" hidden><dt>Descripción</dt><dd id="review-description"></dd></div><div><dt>Destino seleccionado</dt><dd id="review-entity">Se asignará al identificar el problema</dd></div><div><dt>Ubicación</dt><dd id="review-location">Pendiente de confirmar</dd></div></dl></section>
+            <button class="button button-primary" id="send-report" type="submit" disabled>Enviar reporte</button><p class="field-help" id="report-message" role="status"></p><p class="report-submit-help">El reporte y su fotografía se guardarán con el destino y la ubicación que confirmes.</p><aside class="rf-photo-tips"><h3>Consejos para una mejor foto</h3><ul><li>Enfoca bien el problema.</li><li>Incluye parte del entorno.</li><li>Evita imágenes oscuras o borrosas.</li></ul></aside>
+            <div hidden><button id="previous-step" type="button"></button><button id="next-step" type="button"></button><button id="review-report" type="button"></button><button id="edit-report" type="button"></button></div>
+          </section>
+        </fieldset>
+      </form>
+      <section class="report-outcome" id="report-confirmation" aria-labelledby="confirmation-title" hidden>
+        <div class="confirmation-symbol" aria-hidden="true">✓</div>
+        <h1 id="confirmation-title" tabindex="-1">Reporte registrado</h1>
+        <p class="field-help">El reporte y su fotografía se registraron correctamente.</p>
+        <p class="field-help" id="confirmation-warning" role="status"></p>
+        <dl class="review-values">
+          <div><dt>Código del reporte</dt><dd id="confirmation-code"></dd></div>
+          <div><dt>Categoría</dt><dd id="confirmation-category"></dd></div>
+          <div><dt>Fecha</dt><dd id="confirmation-date"></dd></div>
+          <div><dt>Entidad</dt><dd id="confirmation-entity"></dd></div>
+          <div><dt>Estado inicial</dt><dd id="confirmation-status"></dd></div>
+        </dl>
+        <div class="flow-actions">
+          <button class="button button-primary" id="view-my-reports" type="button">Ver mis reportes</button>
+          <button class="button button-secondary" id="create-another-report" type="button">Crear otro reporte</button>
+        </div>
+      </section>
+      <section class="my-reports-panel" id="my-reports" aria-labelledby="my-reports-title" hidden>
+        <div class="reports-heading"><div><p class="reports-eyebrow">SEGUIMIENTO CIUDADANO</p><h1 id="my-reports-title" tabindex="-1">Mis reportes</h1><p>Consulta el estado de tus reportes y sigue su atención.</p></div><button class="button button-secondary" id="reports-retry" type="button">↻ Actualizar reportes</button></div>
+        <dl class="reports-counts"><div><span aria-hidden="true">▤</span><dt>Total de reportes</dt><dd id="reports-count-total">—</dd></div><div><span aria-hidden="true">!</span><dt>Reportados</dt><dd id="reports-count-reported">—</dd></div><div><span aria-hidden="true">◷</span><dt>En proceso</dt><dd id="reports-count-progress">—</dd></div><div><span aria-hidden="true">✓</span><dt>Solucionados</dt><dd id="reports-count-solved">—</dd></div></dl>
+        <div class="reports-toolbar"><label>Buscar reportes<input id="reports-search" type="search" placeholder="Código, descripción o entidad"></label><label>Estado<select id="reports-state"><option value="">Todos los estados</option><option>Reportado</option><option>En proceso</option><option>Solucionado</option></select></label><label>Categoría<select id="reports-category"><option value="">Todas las categorías</option></select></label><label>Ordenar por fecha<select id="reports-order"><option value="newest">Más recientes primero</option><option value="oldest">Más antiguos primero</option></select></label></div>
+        <p class="field-help reports-data-status" id="reports-data-status" role="status"></p>
+        <ul class="temporary-report-list" id="temporary-report-list" aria-label="Reportes del ciudadano"></ul>
+        <div class="reports-empty" id="reports-empty" hidden><h2 id="reports-empty-title"></h2><p id="reports-empty-text"></p><button class="text-button" id="reports-clear" type="button">Limpiar filtros</button></div>
+        <div class="reports-pagination"><p id="reports-page-info" role="status"></p><nav aria-label="Páginas de reportes"><button id="reports-prev" type="button" aria-label="Página anterior">←</button><span id="reports-page-number"></span><button id="reports-next" type="button" aria-label="Página siguiente">→</button></nav></div>
+        <button class="button button-primary" id="create-report-from-list" type="button">Crear otro reporte</button>
+      </section>
+      <section class="report-outcome report-detail" id="report-detail" aria-labelledby="detail-title" hidden>
+        <h1 id="detail-title" tabindex="-1">Detalle del reporte</h1>
+        <div class="detail-grid">
+          <div class="detail-main">
+            <dl class="review-values detail-card">
+              <div><dt>Código del reporte</dt><dd id="detail-code"></dd></div>
+              <div><dt>Categoría</dt><dd id="detail-category"></dd></div>
+              <div><dt>Tipo de incidencia</dt><dd id="detail-type"></dd></div>
+              <div><dt>Fecha de registro</dt><dd><time id="detail-date"></time></dd></div>
+            </dl>
+            <img class="detail-photo" id="detail-photo" alt="Fotografía del incidente adjuntada al reporte">
+            <p class="field-help" id="detail-photo-status" role="status"></p>
+            <section class="detail-card" id="detail-description-block" hidden>
+              <h2>Descripción</h2><p id="detail-description"></p>
+            </section>
+          </div>
+          <div class="detail-side">
+            <dl class="review-values detail-card">
+              <div><dt>Estado actual</dt><dd class="detail-status" id="detail-status"></dd></div>
+              <div><dt>Entidad responsable</dt><dd id="detail-entity"></dd></div>
+            </dl>
+            <section class="detail-card">
+              <h2>Ubicación</h2>
+              <div class="detail-map" id="detail-map" aria-label="Mapa de la ubicación confirmada del incidente"></div>
+              <p class="field-help" id="detail-map-status" role="status"></p>
+              <dl class="review-values">
+                <div><dt>Latitud</dt><dd id="detail-latitude"></dd></div>
+                <div><dt>Longitud</dt><dd id="detail-longitude"></dd></div>
+              </dl>
+            </section>
+          </div>
+        </div>
+        <section class="detail-card" id="detail-solution" hidden><h2>Solución del reporte</h2><img class="detail-photo" id="detail-solution-photo" alt="Evidencia de solución"><p id="detail-solution-note" hidden></p><p>Fecha de solución: <time id="detail-solution-date"></time></p></section>
+        <section class="detail-card" id="detail-history-block" hidden><h2>Historial de atención</h2><ol id="detail-history"></ol></section>
+        <section class="detail-tracking" aria-labelledby="detail-tracking-title">
+          <h2 id="detail-tracking-title">Seguimiento del reporte</h2>
+          <ol class="detail-progress">
+            <li id="detail-progress-0"><span aria-hidden="true">1</span>Reportado</li>
+            <li id="detail-progress-1"><span aria-hidden="true">2</span>En proceso</li>
+            <li id="detail-progress-2"><span aria-hidden="true">3</span>Solucionado</li>
+          </ol>
+        </section>
+        <button class="button button-primary" id="detail-back" type="button">Volver a mis reportes</button>
+      </section>
+
+      <section id="entity-dashboard" class="entity-dashboard" aria-label="Área de Vías" hidden>
+        <aside class="entity-sidebar"><a class="entity-brand" href="index.html"><img data-brand-logo src="assets/logo-symbol.png" alt="Símbolo de la plataforma"><span data-brand-name hidden></span></a>
+          <div class="entity-identity"><svg id="entity-icon-vias" viewBox="0 0 32 32" aria-hidden="true"><path d="M10 3h12l7 26H3Z" fill="currentColor"/><path d="M16 6v5m0 4v5m0 4v3" stroke="white" stroke-width="2"/></svg><svg id="entity-icon-limpieza" viewBox="0 0 32 32" aria-hidden="true" hidden><path d="M9 9h14l-1 20H10ZM6 5h20v3H6ZM12 2h8v3h-8Z" fill="currentColor"/><path d="M14 12v12m4-12v12" stroke="white" stroke-width="2"/></svg><strong id="entity-area-name">Área de Vías</strong></div>
+          <nav id="entity-navigation" class="entity-nav" aria-label="Navegación del Área de Vías">
+            <button id="entity-nav-home" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 4H4v17h16V4h-3M8 2h8v5H8ZM8 12h8M8 16h6"/></svg>Mis incidencias</button>
+            <button id="entity-nav-reports" type="button" hidden>Reportes</button>
+            <button id="entity-nav-progress" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 3"/></svg>En proceso</button>
+            <button id="entity-nav-solved" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m4 12 5 5L21 5"/></svg>Solucionadas</button>
+            <button type="button" disabled title="Todavía no disponible"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 21V10h4v11M10 21V3h4v18M16 21V7h4v14"/></svg>Reporte estadístico</button><button type="button" disabled title="Todavía no disponible"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3Z"/></svg>Perfil</button>
+          </nav>
+          <p class="entity-motto">Tu voz construye<br>un Puno mejor.</p><button id="entity-exit" class="entity-exit" type="button">Volver al ciudadano</button>
+        </aside>
+        <div class="entity-content"><header class="entity-topbar"><span>Inicio <span aria-hidden="true">›</span> <strong>Panel de entidad</strong></span><span class="entity-account"><b>Entidad</b><span id="entity-account"></span></span></header>
+          <section id="entity-overview" aria-labelledby="entity-title">
+            <div class="entity-hero"><h1 id="entity-title" tabindex="-1">Área de Vías</h1><p>Gestiona las incidencias asignadas a tu área.</p></div>
+            <dl class="entity-counts">
+              <div><dt>Total asignadas</dt><dd id="entity-total">0</dd></div>
+              <div><dt>Reportadas</dt><dd id="entity-reported">0</dd></div>
+              <div><dt>En proceso</dt><dd id="entity-progress">0</dd></div>
+              <div><dt>Solucionadas</dt><dd id="entity-solved-count">0</dd></div>
+            </dl>
+            <div class="entity-filters"><label><span class="visually-hidden">Buscar por código o descripción</span><input id="entity-search" type="search" placeholder="Buscar por código o descripción…"></label><label><span class="visually-hidden">Estado</span><select id="entity-filter-state"><option value="">Todos los estados</option><option>Reportado</option><option>En proceso</option><option>Solucionado</option></select></label><label><span class="visually-hidden">Fecha</span><select id="entity-filter-date"><option value="">Todas las fechas</option><option value="7">Últimos 7 días</option><option value="30">Últimos 30 días</option><option value="90">Últimos 90 días</option></select></label><button id="entity-refresh" class="button button-primary" type="button">Actualizar</button></div><p id="entity-load-status" role="status"></p><div class="entity-list-heading"><h2 id="entity-list-title" tabindex="-1">Reportes recientes</h2><button class="text-button" id="entity-view-all" type="button">Ver todos →</button></div>
+            <p class="field-help" id="entity-list-empty">No hay reportes asignados al Área de Vías.</p>
+            <div class="entity-table-head" aria-hidden="true"><span>Incidencia</span><span>Ubicación</span><span>Fecha</span><span>Estado</span><span>Acciones</span><span class="roads-only roads-category">Categoría</span><span class="roads-only roads-type">Tipo</span><span class="roads-only roads-description">Descripción</span></div><ul id="entity-report-list" class="entity-report-list"></ul><div class="entity-pagination"><p id="entity-page-label" role="status"></p><div><button id="entity-previous" class="button button-secondary" type="button">Anterior</button><button id="entity-next" class="button button-secondary" type="button">Siguiente</button></div></div>
+          </section>
+          <section class="report-outcome report-detail" id="entity-report-detail" aria-labelledby="entity-detail-title" hidden>
+        <h1 id="entity-detail-title" tabindex="-1">Detalle del reporte</h1>
+        <div class="detail-grid">
+          <div class="detail-main">
+            <dl class="review-values detail-card">
+              <div><dt>Código del reporte</dt><dd id="entity-detail-code"></dd></div>
+              <div><dt>Categoría</dt><dd id="entity-detail-category"></dd></div><div><dt>Tipo de incidencia</dt><dd id="entity-detail-type"></dd></div>
+              <div><dt>Fecha de registro</dt><dd><time id="entity-detail-date"></time></dd></div>
+            </dl>
+            <img class="detail-photo" id="entity-detail-photo" alt="Fotografía del incidente adjuntada al reporte">
+            <p id="entity-detail-photo-status" role="status"></p><section class="detail-card" id="entity-detail-description-block" hidden>
+              <h2>Descripción</h2><p id="entity-detail-description"></p>
+            </section>
+          </div>
+          <div class="detail-side">
+            <dl class="review-values detail-card">
+              <div><dt>Estado actual</dt><dd class="detail-status" id="entity-detail-status"></dd></div>
+              <div><dt>Entidad responsable</dt><dd id="entity-detail-entity"></dd></div>
+            </dl>
+            <section class="detail-card">
+              <h2>Ubicación</h2>
+              <div class="detail-map" id="entity-detail-map" aria-label="Mapa de la ubicación confirmada del incidente"></div>
+              <p class="field-help" id="entity-detail-map-status" role="status"></p>
+              <dl class="review-values">
+                <div><dt>Latitud</dt><dd id="entity-detail-latitude"></dd></div>
+                <div><dt>Longitud</dt><dd id="entity-detail-longitude"></dd></div>
+              </dl>
+            </section>
+          </div>
+        </div>
+        <section class="detail-tracking" aria-labelledby="entity-detail-tracking-title">
+          <h2 id="entity-detail-tracking-title">Seguimiento del reporte</h2>
+          <ol class="detail-progress">
+            <li id="entity-detail-progress-0"><span aria-hidden="true">1</span>Reportado</li>
+            <li id="entity-detail-progress-1"><span aria-hidden="true">2</span>En proceso</li>
+            <li id="entity-detail-progress-2"><span aria-hidden="true">3</span>Solucionado</li>
+          </ol>
+        </section>
+        
+        <section class="detail-card" id="entity-detail-history-block" hidden><h2>Historial de atención</h2><ol id="entity-detail-history"></ol></section><section class="entity-actions" aria-labelledby="entity-actions-title">
+          <h2 id="entity-actions-title">Acciones de la entidad</h2>
+          <p class="field-help">Registra la atención y adjunta una fotografía para confirmar la solución.</p>
+          <button class="button button-primary" id="entity-start" type="button">Marcar en proceso</button>
+          <button class="button button-primary" id="entity-register" type="button" hidden>Registrar solución</button>
+          <form id="entity-solution-form" hidden>
+            <label>Evidencia fotográfica de solución (obligatoria)</label>
+            <div class="flow-actions">
+              <button class="button button-secondary" id="entity-select-photo" type="button">Seleccionar foto</button>
+              <button class="button button-secondary" id="entity-take-photo" type="button">Tomar foto</button>
+            </div>
+            <input id="entity-photo-file" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+            <input id="entity-photo-camera" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" hidden>
+            <img class="detail-photo" id="entity-preview" alt="Vista previa de evidencia de solución" hidden>
+            <button class="text-button" id="entity-remove-photo" type="button" hidden>Quitar fotografía</button><p class="field-help" id="entity-photo-status" role="status">Debes adjuntar una foto de la solución.</p>
+            <label for="entity-solution-note">Observación de solución (opcional)</label>
+            <textarea id="entity-solution-note" rows="3" maxlength="4000" placeholder="Ej. Se realizó el parchado del bache."></textarea>
+            <button class="button entity-solve" id="entity-solve" type="submit" disabled>Marcar como solucionado</button>
+          </form>
+          <section id="entity-solved" hidden aria-labelledby="entity-solved-title">
+            <h3 id="entity-solved-title">Solución registrada</h3>
+            <img class="detail-photo" id="entity-solved-photo" alt="Fotografía de la solución">
+            <p id="entity-solved-note" hidden></p>
+            <p>Fecha de solución: <time id="entity-solved-date"></time></p>
+          </section>
+          <p id="entity-action-status" role="status"></p>
+        </section>
+<button class="button button-primary" id="entity-detail-back" type="button">Volver a reportes</button>
+      </section>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer"><div class="container footer-content"><span data-brand-name hidden></span><span>Versión inicial · En desarrollo</span><button class="text-button" id="open-entity-demo" type="button">Acceso de prueba · Área de Vías</button><button class="text-button" id="open-cleaning-demo" type="button">Acceso de prueba · Área de Limpieza</button></div></footer>
+  </body>
+</html>
